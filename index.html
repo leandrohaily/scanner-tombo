@@ -1,199 +1,223 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<title>Invent JUS</title>
+  <meta charset="UTF-8" />
+  <title>Invent JUS</title>
 
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Invent JUS">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Invent JUS">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-<script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
 
-<style>
-body {
-  margin: 0;
-  font-family: Arial;
-  background: linear-gradient(#041127, #071a3b);
-  color: white;
-  display: flex;
-  justify-content: center;
-}
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-.app {
-  width: 100%;
-  max-width: 420px;
-  padding: 16px;
-}
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      color: #fff;
+      background:
+        radial-gradient(circle at top, rgba(64,110,255,0.20), transparent 34%),
+        linear-gradient(180deg, #030d20 0%, #071a3b 45%, #041127 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+    }
 
-.logo {
-  text-align: center;
-  margin-bottom: 10px;
-}
+    .app {
+      width: 100%;
+      max-width: 430px;
+      border-radius: 26px;
+      padding: 18px 16px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+      backdrop-filter: blur(12px);
+    }
 
-.logo img {
-  max-width: 200px;
-}
+    .logo-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
 
-.title {
-  text-align: center;
-  font-weight: bold;
-  margin-bottom: 12px;
-}
+    .logo-wrap img {
+      max-width: 200px;
+    }
 
-/* SCANNER */
-.scanner {
-  position: relative;
-  border-radius: 20px;
-  overflow: hidden;
-}
+    .title {
+      text-align: center;
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
 
-#reader {
-  width: 100%;
-}
+    .scanner-shell {
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+      background: #000;
+    }
 
-/* AREA LEITURA */
-.scan-area {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 92%;
-  height: 48%;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 0 0 9999px rgba(0,0,0,0.4);
-}
+    #reader {
+      width: 100%;
+    }
 
-/* LASER */
-.laser {
-  position: absolute;
-  left: 5%;
-  right: 5%;
-  height: 4px;
-  background: red;
-  animation: scan 2s infinite;
-}
+    .scan-frame {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
 
-@keyframes scan {
-  0% { top: 10%; }
-  50% { top: 90%; }
-  100% { top: 10%; }
-}
+    .scan-window {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 92%;
+      height: 48%;
+      transform: translate(-50%, -50%);
+      border-radius: 18px;
+      box-shadow:
+        0 0 0 9999px rgba(0,0,0,0.38),
+        inset 0 0 0 1px rgba(255,255,255,0.14);
+    }
 
-/* 🔵 TEXTO LENDO */
-.status {
-  text-align: center;
-  margin-top: 10px;
-  font-size: 14px;
-  opacity: 0.8;
-}
+    .corner {
+      position: absolute;
+      width: 34px;
+      height: 34px;
+      border: 4px solid #fff;
+    }
 
-.dots::after {
-  content: '';
-  animation: dots 1.5s infinite;
-}
+    .tl { top:0; left:0; border-right:none; border-bottom:none; }
+    .tr { top:0; right:0; border-left:none; border-bottom:none; }
+    .bl { bottom:0; left:0; border-right:none; border-top:none; }
+    .br { bottom:0; right:0; border-left:none; border-top:none; }
 
-@keyframes dots {
-  0% { content: ''; }
-  33% { content: '.'; }
-  66% { content: '..'; }
-  100% { content: '...'; }
-}
+    .laser-line {
+      position: absolute;
+      left: 5%;
+      right: 5%;
+      height: 4px;
+      background: red;
+      top: 10%;
+      box-shadow: 0 0 10px red;
+      animation: scan 2s infinite;
+    }
 
-/* 🔴 BOTÃO CANCELAR */
-.cancel-btn {
-  margin-top: 14px;
-  width: 100%;
-  height: 50px;
-  border-radius: 12px;
-  border: none;
-  background: #e53935;
-  color: white;
-  font-size: 16px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
+    @keyframes scan {
+      0% { top:10%; }
+      50% { top:90%; }
+      100% { top:10%; }
+    }
 
-.cancel-btn:active {
-  transform: scale(0.97);
-}
+    /* 🔴 BOTÃO CANCELAR */
+    .btn-cancelar {
+      margin-top: 16px;
+      width: 100%;
+      height: 48px;
+      border-radius: 12px;
+      border: none;
+      background: #e53935;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(229,57,53,0.4);
+      transition: 0.2s;
+    }
 
-/* ✔ SUCESSO */
-#success {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,180,80,0.95);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 40px;
-  opacity: 0;
-  pointer-events: none;
-  transition: 0.3s;
-}
+    .btn-cancelar:active {
+      transform: scale(0.97);
+      background: #c62828;
+    }
 
-#success.show {
-  opacity: 1;
-}
-</style>
+    #successOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,180,80,0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.3s;
+    }
+
+    #successOverlay.show {
+      opacity: 1;
+    }
+
+  </style>
 </head>
 
 <body>
 
 <div class="app">
 
-  <div class="logo">
+  <div class="logo-wrap">
     <img src="logo-inventjus.png">
   </div>
 
   <div class="title">Leitor de código de barras</div>
 
-  <div class="scanner">
+  <div class="scanner-shell">
     <div id="reader"></div>
 
-    <div class="scan-area">
-      <div class="laser"></div>
+    <div class="scan-frame">
+      <div class="scan-window">
+        <div class="corner tl"></div>
+        <div class="corner tr"></div>
+        <div class="corner bl"></div>
+        <div class="corner br"></div>
+        <div class="laser-line"></div>
+      </div>
     </div>
   </div>
 
-  <!-- 🔵 STATUS -->
-  <div class="status">
-    Lendo<span class="dots"></span>
-  </div>
-
-  <!-- 🔴 BOTÃO -->
-  <button class="cancel-btn" onclick="cancelar()">
-    ❌ Cancelar leitura
+  <!-- 🔥 BOTÃO NOVO -->
+  <button class="btn-cancelar" onclick="cancelarLeitura()">
+    Cancelar leitura
   </button>
 
 </div>
 
-<audio id="beep">
+<audio id="beepSound">
   <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
 </audio>
 
-<div id="success">✔</div>
+<div id="successOverlay">
+  ✔
+</div>
 
 <script>
 
-const urlApp = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
-const qr = new Html5Qrcode("reader");
+const appReturnUrl = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
+const html5QrCode = new Html5Qrcode("reader");
 
-function cancelar(){
-  qr.stop().then(()=> window.location.href = urlApp);
+function cancelarLeitura() {
+  html5QrCode.stop().then(() => {
+    window.location.href = appReturnUrl;
+  }).catch(() => {
+    window.location.href = appReturnUrl;
+  });
 }
 
-function voltar(codigo){
-  const tombo = codigo.replace(/\D/g,'');
-  window.location.href = urlApp + "?tombo=" + tombo;
+function returnToApp(code) {
+  const tombo = code.replace(/\D/g,'');
+  if (!tombo) return;
+  window.location.href = `${appReturnUrl}?tombo=${tombo}`;
 }
 
 Html5Qrcode.getCameras().then(cameras => {
 
-  qr.start(
+  html5QrCode.start(
     cameras[0].id,
     {
       fps: 10,
@@ -203,13 +227,13 @@ Html5Qrcode.getCameras().then(cameras => {
         Html5QrcodeSupportedFormats.CODE_39
       ]
     },
-    (text) => {
+    (decodedText) => {
 
-      document.getElementById("beep").play().catch(()=>{});
-      document.getElementById("success").classList.add("show");
+      document.getElementById("beepSound").play().catch(()=>{});
+      document.getElementById("successOverlay").classList.add("show");
 
-      qr.stop().then(()=>{
-        setTimeout(()=> voltar(text), 700);
+      html5QrCode.stop().then(() => {
+        setTimeout(() => returnToApp(decodedText), 700);
       });
     }
   );
