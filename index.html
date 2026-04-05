@@ -23,7 +23,7 @@
       font-family: Arial, sans-serif;
       color: #fff;
       background:
-        radial-gradient(circle at top, rgba(64,110,255,0.20), transparent 34%),
+        radial-gradient(circle at top, rgba(64, 110, 255, 0.20), transparent 34%),
         linear-gradient(180deg, #030d20 0%, #071a3b 45%, #041127 100%);
       display: flex;
       align-items: center;
@@ -35,44 +35,94 @@
       width: 100%;
       max-width: 430px;
       border-radius: 26px;
-      padding: 18px 16px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.10);
+      padding: 18px 16px 18px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.10);
       backdrop-filter: blur(12px);
+      box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.38),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+      position: relative;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .top-bar button {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.10);
+      color: #fff;
+      font-size: 24px;
+      line-height: 1;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: transform 0.15s ease, background 0.15s ease;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.24);
+    }
+
+    .top-bar button:active {
+      transform: scale(0.94);
+      background: rgba(255,255,255,0.18);
     }
 
     .logo-wrap {
       display: flex;
       justify-content: center;
+      align-items: center;
       margin-bottom: 10px;
     }
 
     .logo-wrap img {
-      max-width: 200px;
+      max-width: 210px;
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.28));
     }
 
     .title {
       text-align: center;
       font-size: 17px;
       font-weight: 700;
-      margin-bottom: 12px;
+      margin-bottom: 6px;
+      letter-spacing: 0.2px;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 13px;
+      color: rgba(255,255,255,0.82);
+      line-height: 1.45;
+      margin-bottom: 16px;
     }
 
     .scanner-shell {
       position: relative;
-      border-radius: 20px;
       overflow: hidden;
+      border-radius: 20px;
       background: #000;
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,0.08),
+        0 10px 30px rgba(0,0,0,0.32);
     }
 
     #reader {
       width: 100%;
+      background: #000;
     }
 
     .scan-frame {
       position: absolute;
       inset: 0;
       pointer-events: none;
+      z-index: 5;
     }
 
     .scan-window {
@@ -84,163 +134,339 @@
       transform: translate(-50%, -50%);
       border-radius: 18px;
       box-shadow:
-        0 0 0 9999px rgba(0,0,0,0.38),
+        0 0 0 9999px rgba(0, 0, 0, 0.38),
         inset 0 0 0 1px rgba(255,255,255,0.14);
+      overflow: hidden;
+    }
+
+    .scan-window::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(
+          180deg,
+          rgba(255,255,255,0.04),
+          rgba(255,255,255,0.01)
+        );
+      pointer-events: none;
     }
 
     .corner {
       position: absolute;
-      width: 34px;
-      height: 34px;
-      border: 4px solid #fff;
+      width: 38px;
+      height: 38px;
+      border: 4px solid #ffffff;
+      border-radius: 10px;
+      opacity: 0.95;
     }
 
-    .tl { top:0; left:0; border-right:none; border-bottom:none; }
-    .tr { top:0; right:0; border-left:none; border-bottom:none; }
-    .bl { bottom:0; left:0; border-right:none; border-top:none; }
-    .br { bottom:0; right:0; border-left:none; border-top:none; }
+    .corner.tl {
+      top: 0;
+      left: 0;
+      border-right: none;
+      border-bottom: none;
+    }
+
+    .corner.tr {
+      top: 0;
+      right: 0;
+      border-left: none;
+      border-bottom: none;
+    }
+
+    .corner.bl {
+      bottom: 0;
+      left: 0;
+      border-right: none;
+      border-top: none;
+    }
+
+    .corner.br {
+      bottom: 0;
+      right: 0;
+      border-left: none;
+      border-top: none;
+    }
 
     .laser-line {
       position: absolute;
-      left: 5%;
-      right: 5%;
+      left: 4%;
+      right: 4%;
       height: 4px;
-      background: red;
       top: 10%;
-      box-shadow: 0 0 10px red;
-      animation: scan 2s infinite;
+      border-radius: 999px;
+      background: linear-gradient(
+        90deg,
+        rgba(255,40,40,0.15),
+        #ff4747 18%,
+        #fff 50%,
+        #ff4747 82%,
+        rgba(255,40,40,0.15)
+      );
+      box-shadow:
+        0 0 8px rgba(255, 60, 60, 0.95),
+        0 0 18px rgba(255, 60, 60, 0.70),
+        0 0 30px rgba(255, 60, 60, 0.35);
+      animation: laserMove 2.2s ease-in-out infinite;
     }
 
-    @keyframes scan {
-      0% { top:10%; }
-      50% { top:90%; }
-      100% { top:10%; }
+    .laser-glow {
+      position: absolute;
+      left: 4%;
+      right: 4%;
+      height: 90px;
+      top: 10%;
+      transform: translateY(-50%);
+      background: linear-gradient(
+        to bottom,
+        rgba(255, 50, 50, 0),
+        rgba(255, 50, 50, 0.14),
+        rgba(255, 50, 50, 0)
+      );
+      filter: blur(8px);
+      animation: laserMoveGlow 2.2s ease-in-out infinite;
     }
 
-    /* 🔴 BOTÃO CANCELAR */
-    .btn-cancelar {
-      margin-top: 16px;
-      width: 100%;
-      height: 48px;
-      border-radius: 12px;
-      border: none;
-      background: #e53935;
-      color: white;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 6px 16px rgba(229,57,53,0.4);
-      transition: 0.2s;
+    .laser-sheen {
+      position: absolute;
+      left: -30%;
+      top: 0;
+      width: 30%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        rgba(255,255,255,0),
+        rgba(255,255,255,0.08),
+        rgba(255,255,255,0)
+      );
+      transform: skewX(-20deg);
+      animation: sheenSweep 2.8s linear infinite;
     }
 
-    .btn-cancelar:active {
-      transform: scale(0.97);
-      background: #c62828;
+    @keyframes laserMove {
+      0%   { top: 10%; }
+      50%  { top: 90%; }
+      100% { top: 10%; }
+    }
+
+    @keyframes laserMoveGlow {
+      0%   { top: 10%; }
+      50%  { top: 90%; }
+      100% { top: 10%; }
+    }
+
+    @keyframes sheenSweep {
+      0%   { left: -35%; }
+      100% { left: 115%; }
     }
 
     #successOverlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,180,80,0.95);
+      background: rgba(0, 168, 89, 0.94);
       display: flex;
       align-items: center;
       justify-content: center;
       opacity: 0;
       pointer-events: none;
-      transition: 0.3s;
+      transition: opacity 0.25s ease;
+      z-index: 9999;
     }
 
     #successOverlay.show {
       opacity: 1;
+      pointer-events: all;
     }
 
+    .successBox {
+      text-align: center;
+      color: white;
+      padding: 24px;
+      animation: popIn 0.28s ease;
+    }
+
+    .checkmark {
+      font-size: 72px;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+
+    .successText {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .successSubtext {
+      font-size: 14px;
+      opacity: 0.96;
+    }
+
+    @keyframes popIn {
+      from {
+        transform: scale(0.82);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
   </style>
 </head>
-
 <body>
+  <div class="app">
+    <div class="top-bar">
+      <button onclick="cancelarLeitura()" aria-label="Cancelar leitura">✕</button>
+    </div>
 
-<div class="app">
+    <div class="logo-wrap">
+      <img src="logo-inventjus.png" alt="Invent JUS">
+    </div>
 
-  <div class="logo-wrap">
-    <img src="logo-inventjus.png">
-  </div>
+    <div class="title">Leitor de código de barras</div>
+    <div class="subtitle">
+      Aponte a câmera para a etiqueta do patrimônio e mantenha o código dentro da área de leitura.
+    </div>
 
-  <div class="title">Leitor de código de barras</div>
+    <div class="scanner-shell">
+      <div id="reader"></div>
 
-  <div class="scanner-shell">
-    <div id="reader"></div>
-
-    <div class="scan-frame">
-      <div class="scan-window">
-        <div class="corner tl"></div>
-        <div class="corner tr"></div>
-        <div class="corner bl"></div>
-        <div class="corner br"></div>
-        <div class="laser-line"></div>
+      <div class="scan-frame">
+        <div class="scan-window">
+          <div class="corner tl"></div>
+          <div class="corner tr"></div>
+          <div class="corner bl"></div>
+          <div class="corner br"></div>
+          <div class="laser-glow"></div>
+          <div class="laser-line"></div>
+          <div class="laser-sheen"></div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- 🔥 BOTÃO NOVO -->
-  <button class="btn-cancelar" onclick="cancelarLeitura()">
-    Cancelar leitura
-  </button>
+  <audio id="beepSound" preload="auto">
+    <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+  </audio>
 
-</div>
+  <div id="successOverlay">
+    <div class="successBox">
+      <div class="checkmark">✔</div>
+      <div class="successText">Tombo lido com sucesso</div>
+      <div class="successSubtext">Retornando ao Invent JUS...</div>
+    </div>
+  </div>
 
-<audio id="beepSound">
-  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
-</audio>
+  <script>
+    const appReturnUrl = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
+    const html5QrCode = new Html5Qrcode("reader");
+    let jaLeu = false;
+    let cameraIniciada = false;
 
-<div id="successOverlay">
-  ✔
-</div>
+    function onlyDigits(value) {
+      return (value || "").replace(/\D/g, "");
+    }
 
-<script>
+    function playBeep() {
+      const beep = document.getElementById("beepSound");
+      if (beep) {
+        beep.currentTime = 0;
+        beep.play().catch(() => {});
+      }
+    }
 
-const appReturnUrl = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
-const html5QrCode = new Html5Qrcode("reader");
+    function vibrateOk() {
+      if (navigator.vibrate) {
+        navigator.vibrate(180);
+      }
+    }
 
-function cancelarLeitura() {
-  html5QrCode.stop().then(() => {
-    window.location.href = appReturnUrl;
-  }).catch(() => {
-    window.location.href = appReturnUrl;
-  });
-}
+    function showSuccess() {
+      const overlay = document.getElementById("successOverlay");
+      if (overlay) {
+        overlay.classList.add("show");
+      }
+    }
 
-function returnToApp(code) {
-  const tombo = code.replace(/\D/g,'');
-  if (!tombo) return;
-  window.location.href = `${appReturnUrl}?tombo=${tombo}`;
-}
+    function returnToApp(code) {
+      const tombo = onlyDigits(code);
+      if (!tombo) {
+        jaLeu = false;
+        return;
+      }
+      window.location.href = `${appReturnUrl}?tombo=${encodeURIComponent(tombo)}`;
+    }
 
-Html5Qrcode.getCameras().then(cameras => {
+    function voltarParaApp() {
+      window.location.href = appReturnUrl;
+    }
 
-  html5QrCode.start(
-    cameras[0].id,
-    {
+    function cancelarLeitura() {
+      if (cameraIniciada) {
+        html5QrCode.stop()
+          .then(() => {
+            cameraIniciada = false;
+            voltarParaApp();
+          })
+          .catch(() => {
+            voltarParaApp();
+          });
+      } else {
+        voltarParaApp();
+      }
+    }
+
+    const config = {
       fps: 10,
       qrbox: { width: 320, height: 180 },
+      aspectRatio: 1.7778,
+      experimentalFeatures: {
+        useBarCodeDetectorIfSupported: false
+      },
       formatsToSupport: [
         Html5QrcodeSupportedFormats.CODE_128,
         Html5QrcodeSupportedFormats.CODE_39
       ]
-    },
-    (decodedText) => {
+    };
 
-      document.getElementById("beepSound").play().catch(()=>{});
-      document.getElementById("successOverlay").classList.add("show");
+    Html5Qrcode.getCameras().then(cameras => {
+      if (!cameras || cameras.length === 0) {
+        return;
+      }
 
-      html5QrCode.stop().then(() => {
-        setTimeout(() => returnToApp(decodedText), 700);
-      });
-    }
-  );
+      const camera =
+        cameras.find(c => /back|rear|environment|traseira/i.test(c.label)) ||
+        cameras[0];
 
-});
+      html5QrCode.start(
+        camera.id,
+        config,
+        (decodedText) => {
+          if (jaLeu) return;
+          jaLeu = true;
 
-</script>
+          playBeep();
+          vibrateOk();
+          showSuccess();
 
+          html5QrCode.stop().then(() => {
+            cameraIniciada = false;
+            setTimeout(() => {
+              returnToApp(decodedText);
+            }, 850);
+          }).catch(() => {
+            setTimeout(() => {
+              returnToApp(decodedText);
+            }, 850);
+          });
+        },
+        () => {}
+      ).then(() => {
+        cameraIniciada = true;
+      }).catch(() => {});
+    }).catch(() => {});
+  </script>
 </body>
 </html>
