@@ -48,6 +48,10 @@
 
 <body>
 
+  <audio id="beepSound">
+  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+  </audio>
+
   <div class="box">
     <h2>Leitor de código de barras</h2>
     <p>Aponte a câmera para a etiqueta do patrimônio</p>
@@ -113,10 +117,19 @@
       html5QrCode.start(
         camera.id,
         config,
-        (decodedText) => {
-          statusEl.textContent = "Código lido com sucesso!";
-          html5QrCode.stop().then(() => returnToApp(decodedText));
-        },
+    (decodedText) => {
+      statusEl.textContent = "Código lido com sucesso!";
+    
+      // 🔊 tocar beep
+      const beep = document.getElementById("beepSound");
+      if (beep) {
+        beep.play().catch(() => {});
+      }
+    
+      html5QrCode.stop().then(() => {
+        setTimeout(() => returnToApp(decodedText), 500);
+      });
+    },
         () => {}
       ).then(() => {
         statusEl.textContent = "Aponte a câmera para o código.";
