@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Leitor de Tombo</title>
+
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 16px;
+      background: #0f172a;
+      color: white;
+      text-align: center;
+    }
+
+    #reader {
+      width: 100%;
+      max-width: 420px;
+      margin: 16px auto;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .box {
+      max-width: 460px;
+      margin: 0 auto;
+    }
+
+    .msg {
+      margin-top: 12px;
+      font-size: 14px;
+      opacity: 0.95;
+    }
+
+    input[type="file"] {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="box">
+    <h2>Leitor de código de barras</h2>
+    <p>Aponte a câmera para a etiqueta do patrimônio</p>
+
+    <div id="reader"></div>
+
+    <div id="status" class="msg">
+      Iniciando câmera...
+    </div>
+
+    <input id="file-input" type="file" accept="image/*" capture="environment" />
+
+    <div class="msg">
+      Se não funcionar, selecione uma imagem ou volte e digite o tombo manualmente.
+    </div>
+  </div>
+
+  <script>
+    // 🔥 URL DO SEU APP (JÁ CORRETA)
+    const appReturnUrl = "https://inventario-patrimonial-orzkxr.flutterflow.app/lista_bens_inventariados";
+
+    function onlyDigits(value) {
+      return (value || "").replace(/\D/g, "");
+    }
+
+    function returnToApp(code) {
+      const tombo = onlyDigits(code);
+      if (!tombo) return;
+
+      window.location.href = `${appReturnUrl}?tombo=${encodeURIComponent(tombo)}`;
+    }
+
+    const statusEl = document.getElementById("status");
+    const html5QrCode = new Html5Qrcode("reader");
+
+    const config = {
+      fps: 10,
+      qrbox: { width: 260, height: 120 },
+      aspectRatio: 1.7778,
+      experimentalFeatures: {
+        useBarCodeDetectorIfSupported: false
+      },
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.CODE_39,
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.UPC_E
+      ]
+    };
+
+    Html5Qrcode.getCameras().then(cameras => {
+      if (!cameras || cameras.length === 0) {
+        statusEl.textContent = "Nenhuma câmera encontrada.";
+        return;
+      }
+
+      const camera = cameras.find(c => 
+        /back|rear|environment|traseira/i.test(c.label)
+      ) || cameras[0];
+
+      html5QrCode.start(
+        camera.id,
+        config,
+        (decodedText) => {
+          statusEl.textContent = "Código lido com sucesso!";
+          html5QrCode.stop().then(() => returnToApp(decodedText));
+        },
+        () => {}
+      ).then(() => {
+        statusEl.textContent = "Aponte a câmera para o código.";
+      }).catch(err => {
+        statusEl.textContent = "Erro ao iniciar câmera: " + err;
+      });
+    }).catch(err => {
+      statusEl.textContent = "Erro ao acessar câmera: " + err;
+    });
+
+    // 📷 Fallback por imagem (IMPORTANTE PARA SAFARI)
+    document.getElementById("file-input").addEventListener("change", async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      try {
+        const result = await html5QrCode.scanFile(file, true);
+        returnToApp(result);
+      } catch (err) {
+        statusEl.textContent = "Não foi possível ler a imagem.";
+      }
+    });
+  </script>
+
+</body>
+</html>
