@@ -7,7 +7,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Invent JUS">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
   <script src="https://unpkg.com/html5-qrcode"></script>
@@ -103,8 +102,8 @@
       position: absolute;
       left: 50%;
       top: 50%;
-      width: 72%;
-      height: 24%;
+      width: 92%;
+      height: 48%;
       transform: translate(-50%, -50%);
       border-radius: 18px;
       box-shadow:
@@ -128,8 +127,8 @@
 
     .corner {
       position: absolute;
-      width: 34px;
-      height: 34px;
+      width: 38px;
+      height: 38px;
       border: 4px solid #ffffff;
       border-radius: 10px;
       opacity: 0.95;
@@ -165,12 +164,19 @@
 
     .laser-line {
       position: absolute;
-      left: 6%;
-      right: 6%;
+      left: 4%;
+      right: 4%;
       height: 4px;
-      top: 14%;
+      top: 10%;
       border-radius: 999px;
-      background: linear-gradient(90deg, rgba(255,40,40,0.15), #ff4747 18%, #fff 50%, #ff4747 82%, rgba(255,40,40,0.15));
+      background: linear-gradient(
+        90deg,
+        rgba(255,40,40,0.15),
+        #ff4747 18%,
+        #fff 50%,
+        #ff4747 82%,
+        rgba(255,40,40,0.15)
+      );
       box-shadow:
         0 0 8px rgba(255, 60, 60, 0.95),
         0 0 18px rgba(255, 60, 60, 0.70),
@@ -180,10 +186,10 @@
 
     .laser-glow {
       position: absolute;
-      left: 8%;
-      right: 8%;
-      height: 78px;
-      top: 14%;
+      left: 4%;
+      right: 4%;
+      height: 90px;
+      top: 10%;
       transform: translateY(-50%);
       background: linear-gradient(
         to bottom,
@@ -212,35 +218,20 @@
     }
 
     @keyframes laserMove {
-      0%   { top: 14%; }
-      50%  { top: 86%; }
-      100% { top: 14%; }
+      0%   { top: 10%; }
+      50%  { top: 90%; }
+      100% { top: 10%; }
     }
 
     @keyframes laserMoveGlow {
-      0%   { top: 14%; }
-      50%  { top: 86%; }
-      100% { top: 14%; }
+      0%   { top: 10%; }
+      50%  { top: 90%; }
+      100% { top: 10%; }
     }
 
     @keyframes sheenSweep {
       0%   { left: -35%; }
       100% { left: 115%; }
-    }
-
-    .status {
-      margin-top: 13px;
-      min-height: 20px;
-      text-align: center;
-      font-size: 14px;
-      color: rgba(255,255,255,0.93);
-    }
-
-    .footer-note {
-      margin-top: 12px;
-      text-align: center;
-      font-size: 12px;
-      color: rgba(255,255,255,0.58);
     }
 
     #successOverlay {
@@ -323,12 +314,6 @@
         </div>
       </div>
     </div>
-
-    <div id="status" class="status">Iniciando câmera...</div>
-
-    <div class="footer-note">
-      Invent JUS • Leitura patrimonial
-    </div>
   </div>
 
   <audio id="beepSound" preload="auto">
@@ -345,7 +330,6 @@
 
   <script>
     const appReturnUrl = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
-    const statusEl = document.getElementById("status");
     const html5QrCode = new Html5Qrcode("reader");
     let jaLeu = false;
 
@@ -385,7 +369,7 @@
 
     const config = {
       fps: 10,
-      qrbox: { width: 250, height: 100 },
+      qrbox: { width: 320, height: 180 },
       aspectRatio: 1.7778,
       experimentalFeatures: {
         useBarCodeDetectorIfSupported: false
@@ -398,7 +382,6 @@
 
     Html5Qrcode.getCameras().then(cameras => {
       if (!cameras || cameras.length === 0) {
-        statusEl.textContent = "Nenhuma câmera encontrada.";
         return;
       }
 
@@ -413,7 +396,6 @@
           if (jaLeu) return;
           jaLeu = true;
 
-          statusEl.textContent = "Código lido com sucesso.";
           playBeep();
           vibrateOk();
           showSuccess();
@@ -429,14 +411,8 @@
           });
         },
         () => {}
-      ).then(() => {
-        statusEl.textContent = "Aponte a câmera para o código de barras.";
-      }).catch(err => {
-        statusEl.textContent = "Erro ao iniciar câmera: " + err;
-      });
-    }).catch(err => {
-      statusEl.textContent = "Erro ao acessar câmera: " + err;
-    });
+      );
+    }).catch(() => {});
   </script>
 </body>
 </html>
