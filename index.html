@@ -86,7 +86,7 @@
       overflow: hidden;
       border-radius: 22px;
       background: #000;
-      min-height: 310px;
+      min-height: 320px;
       box-shadow:
         inset 0 0 0 1px rgba(255,255,255,0.08),
         0 10px 30px rgba(0,0,0,0.32);
@@ -94,7 +94,7 @@
 
     #reader {
       width: 100%;
-      min-height: 310px;
+      min-height: 320px;
       background: #000;
       border: none !important;
       position: relative;
@@ -118,7 +118,7 @@
 
     #reader video {
       width: 100% !important;
-      height: 310px !important;
+      height: 320px !important;
       object-fit: cover !important;
       border-radius: 22px;
       background: #000;
@@ -143,9 +143,9 @@
       position: absolute;
       left: 50%;
       top: 50%;
-      width: 78%;
-      max-width: 300px;
-      height: 120px;
+      width: 84%;
+      max-width: 330px;
+      height: 130px;
       transform: translate(-50%, -50%);
       border: 2px solid rgba(255,255,255,0.95);
       border-radius: 12px;
@@ -284,7 +284,7 @@
     .scan-hint {
       position: absolute;
       left: 50%;
-      top: calc(50% + 82px);
+      top: calc(50% + 88px);
       transform: translateX(-50%);
       font-size: 12px;
       color: rgba(255,255,255,0.82);
@@ -357,7 +357,7 @@
       justify-content: center;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.18s ease;
+      transition: opacity 0.12s ease;
       z-index: 9999;
     }
 
@@ -370,7 +370,7 @@
       text-align: center;
       color: white;
       padding: 24px;
-      animation: popIn 0.18s ease;
+      animation: popIn 0.12s ease;
     }
 
     .checkmark {
@@ -405,17 +405,17 @@
       .scanner-shell,
       #reader,
       #reader video {
-        min-height: 280px;
-        height: 280px !important;
+        min-height: 290px;
+        height: 290px !important;
       }
 
       .scan-box {
-        width: 82%;
-        height: 110px;
+        width: 86%;
+        height: 120px;
       }
 
       .scan-hint {
-        top: calc(50% + 76px);
+        top: calc(50% + 82px);
       }
     }
   </style>
@@ -473,7 +473,7 @@
   </div>
 
   <script>
-    const fallbackReturnUrl = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
+    const scannerReturnUrl = "https://inventario-patrimonial-orzkxr.flutterflow.app/scannerRetorno";
     const readerElementId = "reader";
     let html5QrCode = null;
 
@@ -506,60 +506,6 @@
       return audioContext;
     }
 
-    function getReturnUrl() {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const urlParam = params.get("returnUrl");
-
-        if (urlParam && urlParam.trim() !== "") {
-          return decodeURIComponent(urlParam);
-        }
-
-        if (document.referrer && document.referrer.trim() !== "") {
-          return document.referrer;
-        }
-      } catch (e) {
-        console.warn("Falha ao obter returnUrl:", e);
-      }
-
-      return fallbackReturnUrl;
-    }
-
-    function navegarDeVolta(tombo = null) {
-      const baseUrl = getReturnUrl();
-
-      try {
-        const url = new URL(baseUrl, window.location.origin);
-
-        if (tombo) {
-          url.searchParams.set("tombo", onlyDigits(tombo));
-        }
-
-        const mesmaOrigem = (() => {
-          try {
-            return document.referrer && new URL(document.referrer).origin === window.location.origin;
-          } catch {
-            return false;
-          }
-        })();
-
-        if (!tombo && window.history.length > 1 && mesmaOrigem) {
-          window.history.back();
-          return;
-        }
-
-        window.location.replace(url.toString());
-      } catch (e) {
-        console.warn("Falha ao navegar com URL dinâmica:", e);
-
-        const finalUrl = tombo
-          ? `${fallbackReturnUrl}?tombo=${encodeURIComponent(onlyDigits(tombo))}`
-          : fallbackReturnUrl;
-
-        window.location.replace(finalUrl);
-      }
-    }
-
     async function unlockAudio() {
       if (audioUnlocked) return true;
 
@@ -572,12 +518,10 @@
         if (beepElement) {
           beepElement.muted = true;
           beepElement.currentTime = 0;
-
           const p = beepElement.play();
           if (p && typeof p.then === "function") {
             await p.catch(() => {});
           }
-
           beepElement.pause();
           beepElement.currentTime = 0;
           beepElement.muted = false;
@@ -623,13 +567,13 @@
 
         gainNode.gain.setValueAtTime(0.0001, ctx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.01);
-        gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.16);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.14);
 
         oscillator.connect(gainNode);
         gainNode.connect(ctx.destination);
 
         oscillator.start(ctx.currentTime);
-        oscillator.stop(ctx.currentTime + 0.16);
+        oscillator.stop(ctx.currentTime + 0.14);
       } catch (e) {
         console.warn("Falha no beep fallback:", e);
       }
@@ -637,7 +581,7 @@
 
     function vibrateOk() {
       if (navigator.vibrate) {
-        navigator.vibrate(180);
+        navigator.vibrate(120);
       }
     }
 
@@ -646,6 +590,18 @@
       if (overlay) {
         overlay.classList.add("show");
       }
+    }
+
+    function irParaScannerRetorno(params = {}) {
+      const url = new URL(scannerReturnUrl);
+
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== "") {
+          url.searchParams.set(key, value);
+        }
+      });
+
+      window.location.replace(url.toString());
     }
 
     function returnToApp(decodedText) {
@@ -657,11 +613,11 @@
         return;
       }
 
-      navegarDeVolta(tombo);
+      irParaScannerRetorno({ tombo });
     }
 
-    function voltarParaApp() {
-      navegarDeVolta();
+    function voltarParaAppCancelado() {
+      irParaScannerRetorno({ cancelado: "true" });
     }
 
     async function cancelarLeitura() {
@@ -673,7 +629,7 @@
       } catch (e) {
         console.warn("Erro ao parar câmera:", e);
       } finally {
-        voltarParaApp();
+        voltarParaAppCancelado();
       }
     }
 
@@ -703,23 +659,23 @@
 
       setTimeout(async () => {
         await encerrarScannerComRetorno(decodedText);
-      }, 180);
+      }, 80);
     }
 
     function onScanFailure(error) {
-      // console.debug("Falha na leitura:", error);
+      // console.debug(error);
     }
 
-    const qrboxWidth = 280;
-    const qrboxHeight = 110;
+    const qrboxWidth = 320;
+    const qrboxHeight = 130;
 
     const config = {
-      fps: 10,
+      fps: 18,
       qrbox: { width: qrboxWidth, height: qrboxHeight },
       aspectRatio: 1.7778,
       disableFlip: true,
       experimentalFeatures: {
-        useBarCodeDetectorIfSupported: false
+        useBarCodeDetectorIfSupported: true
       },
       formatsToSupport: [
         Html5QrcodeSupportedFormats.CODE_128,
@@ -729,7 +685,6 @@
 
     async function iniciarScanner() {
       if (cameraIniciada || scannerIniciando) return;
-
       scannerIniciando = true;
 
       try {
@@ -742,23 +697,19 @@
           html5QrCode = new Html5Qrcode(readerElementId);
         }
 
-        console.log("Tentando iniciar scanner rapidamente...");
-
         try {
           await html5QrCode.start(
-            { facingMode: "environment" },
+            { facingMode: { ideal: "environment" } },
             config,
             onScanSuccess,
             onScanFailure
           );
 
           cameraIniciada = true;
-          console.log("Scanner iniciado com facingMode.");
         } catch (erroFacingMode) {
           console.warn("Falha com facingMode, tentando lista de câmeras...", erroFacingMode);
 
           const cameras = await Html5Qrcode.getCameras();
-          console.log("Câmeras encontradas:", cameras);
 
           if (!cameras || cameras.length === 0) {
             console.error("Nenhuma câmera encontrada.");
@@ -777,13 +728,11 @@
           );
 
           cameraIniciada = true;
-          console.log("Scanner iniciado com cameraId.");
         }
 
         setTimeout(() => {
           try {
             const capabilities = html5QrCode.getRunningTrackCapabilities?.();
-            const settings = html5QrCode.getRunningTrackSettings?.();
 
             if (capabilities && html5QrCode.applyVideoConstraints) {
               const advanced = [];
@@ -794,29 +743,16 @@
                 }
               }
 
-              if (
-                capabilities.zoom &&
-                typeof capabilities.zoom.max === "number" &&
-                capabilities.zoom.max >= 1.5
-              ) {
-                const zoomDesejado = Math.min(1.5, capabilities.zoom.max);
-                const zoomAtual = settings && settings.zoom ? settings.zoom : 1;
-
-                if (zoomDesejado > zoomAtual) {
-                  advanced.push({ zoom: zoomDesejado });
-                }
-              }
-
               if (advanced.length > 0) {
                 html5QrCode.applyVideoConstraints({ advanced }).catch(err => {
-                  console.warn("Falha ao aplicar constraints:", err);
+                  console.warn("Falha ao aplicar foco contínuo:", err);
                 });
               }
             }
           } catch (e) {
-            console.warn("Falha ao ajustar foco/zoom:", e);
+            console.warn("Falha ao ajustar foco:", e);
           }
-        }, 300);
+        }, 200);
 
       } catch (e) {
         console.error("Erro ao iniciar scanner:", e);
