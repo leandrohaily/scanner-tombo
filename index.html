@@ -481,6 +481,7 @@
     let cameraIniciada = false;
     let leituraEmAndamento = false;
     let scannerIniciando = false;
+    let retornoExecutado = false;
 
     let audioUnlocked = false;
     let audioContext = null;
@@ -594,20 +595,84 @@
       }
     }
 
+    function montarUrlRetorno(tombo = "") {
+      const url = new URL(appReturnUrl, window.location.origin);
+
+      if (tombo) {
+        url.searchParams.set("tombo", tombo);
+      }
+
+      url.searchParams.set("scanner_return", "1");
+      return url.toString();
+    }
+
+    function salvarRetornoLocal(tombo = "") {
+      try {
+        if (tombo) {
+          sessionStorage.setItem("tomboLido", tombo);
+          localStorage.setItem("tomboLido", tombo);
+        }
+        sessionStorage.setItem("scannerRetornando", "1");
+        localStorage.setItem("scannerRetornando", "1");
+      } catch (e) {
+        console.warn("Não foi possível salvar retorno local:", e);
+      }
+    }
+
+    function tentarFecharJanela() {
+      try {
+        window.close();
+      } catch (e) {
+        console.warn("window.close falhou:", e);
+      }
+    }
+
+    function executarRetorno(tombo = "") {
+      if (retornoExecutado) return;
+      retornoExecutado = true;
+
+      salvarRetornoLocal(tombo);
+
+      const urlRetorno = montarUrlRetorno(tombo);
+
+      if (window.history.length > 1) {
+        try {
+          window.history.back();
+
+          setTimeout(() => {
+            if (document.visibilityState === "visible") {
+              window.location.replace(urlRetorno);
+            }
+          }, 700);
+
+          return;
+        } catch (e) {
+          console.warn("history.back falhou:", e);
+        }
+      }
+
+      tentarFecharJanela();
+
+      setTimeout(() => {
+        window.location.replace(urlRetorno);
+      }, 150);
+    }
+
     function returnToApp(decodedText) {
       const tombo = onlyDigits(decodedText);
 
       if (!tombo) {
         jaLeu = false;
         leituraEmAndamento = false;
+        retornoExecutado = false;
         return;
       }
 
-      window.location.href = `${appReturnUrl}?tombo=${encodeURIComponent(tombo)}`;
+      executarRetorno(tombo);
     }
 
     function voltarParaApp() {
-      window.location.href = appReturnUrl;
+      executarRetorno("");
     }
 
     async function cancelarLeitura() {
@@ -687,8 +752,6 @@
           html5QrCode = new Html5Qrcode(readerElementId);
         }
 
-        console.log("Tentando iniciar scanner rapidamente...");
-
         try {
           await html5QrCode.start(
             { facingMode: "environment" },
@@ -698,12 +761,10 @@
           );
 
           cameraIniciada = true;
-          console.log("Scanner iniciado com facingMode.");
         } catch (erroFacingMode) {
           console.warn("Falha com facingMode, tentando lista de câmeras...", erroFacingMode);
 
           const cameras = await Html5Qrcode.getCameras();
-          console.log("Câmeras encontradas:", cameras);
 
           if (!cameras || cameras.length === 0) {
             console.error("Nenhuma câmera encontrada.");
@@ -722,7 +783,6 @@
           );
 
           cameraIniciada = true;
-          console.log("Scanner iniciado com cameraId.");
         }
 
         setTimeout(() => {
