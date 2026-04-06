@@ -357,7 +357,7 @@
       justify-content: center;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.18s ease;
+      transition: opacity 0.25s ease;
       z-index: 9999;
     }
 
@@ -370,7 +370,7 @@
       text-align: center;
       color: white;
       padding: 24px;
-      animation: popIn 0.18s ease;
+      animation: popIn 0.28s ease;
     }
 
     .checkmark {
@@ -633,7 +633,9 @@
         console.warn("Erro ao encerrar scanner:", e);
       }
 
-      returnToApp(decodedText);
+      setTimeout(() => {
+        returnToApp(decodedText);
+      }, 850);
     }
 
     async function onScanSuccess(decodedText) {
@@ -643,13 +645,10 @@
       jaLeu = true;
       leituraEmAndamento = true;
 
-      playBeep().catch(() => {});
+      await playBeep();
       vibrateOk();
       showSuccess();
-
-      setTimeout(async () => {
-        await encerrarScannerComRetorno(decodedText);
-      }, 180);
+      await encerrarScannerComRetorno(decodedText);
     }
 
     function onScanFailure(error) {
