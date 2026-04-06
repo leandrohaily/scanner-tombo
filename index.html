@@ -86,7 +86,7 @@
       overflow: hidden;
       border-radius: 22px;
       background: #000;
-      min-height: 320px;
+      min-height: 310px;
       box-shadow:
         inset 0 0 0 1px rgba(255,255,255,0.08),
         0 10px 30px rgba(0,0,0,0.32);
@@ -94,7 +94,7 @@
 
     #reader {
       width: 100%;
-      min-height: 320px;
+      min-height: 310px;
       background: #000;
       border: none !important;
       position: relative;
@@ -118,7 +118,7 @@
 
     #reader video {
       width: 100% !important;
-      height: 320px !important;
+      height: 310px !important;
       object-fit: cover !important;
       border-radius: 22px;
       background: #000;
@@ -143,9 +143,9 @@
       position: absolute;
       left: 50%;
       top: 50%;
-      width: 84%;
-      max-width: 330px;
-      height: 130px;
+      width: 78%;
+      max-width: 300px;
+      height: 120px;
       transform: translate(-50%, -50%);
       border: 2px solid rgba(255,255,255,0.95);
       border-radius: 12px;
@@ -284,7 +284,7 @@
     .scan-hint {
       position: absolute;
       left: 50%;
-      top: calc(50% + 88px);
+      top: calc(50% + 82px);
       transform: translateX(-50%);
       font-size: 12px;
       color: rgba(255,255,255,0.82);
@@ -320,19 +320,18 @@
       100% { content: ""; }
     }
 
-    .start-wrap,
     .cancel-wrap {
       margin-top: 16px;
       display: flex;
       justify-content: center;
     }
 
-    .start-btn,
     .cancel-btn {
       min-width: 180px;
       height: 48px;
       border: none;
       border-radius: 14px;
+      background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%);
       color: #fff;
       font-size: 15px;
       font-weight: 700;
@@ -344,15 +343,6 @@
       transition: transform 0.15s ease, filter 0.15s ease;
     }
 
-    .start-btn {
-      background: linear-gradient(180deg, #1565c0 0%, #0d47a1 100%);
-    }
-
-    .cancel-btn {
-      background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%);
-    }
-
-    .start-btn:active,
     .cancel-btn:active {
       transform: scale(0.97);
       filter: brightness(1.06);
@@ -367,7 +357,7 @@
       justify-content: center;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.12s ease;
+      transition: opacity 0.18s ease;
       z-index: 9999;
     }
 
@@ -380,7 +370,7 @@
       text-align: center;
       color: white;
       padding: 24px;
-      animation: popIn 0.12s ease;
+      animation: popIn 0.18s ease;
     }
 
     .checkmark {
@@ -400,14 +390,6 @@
       opacity: 0.96;
     }
 
-    .status-message {
-      margin-top: 12px;
-      text-align: center;
-      font-size: 13px;
-      color: rgba(255,255,255,0.82);
-      min-height: 18px;
-    }
-
     @keyframes popIn {
       from {
         transform: scale(0.82);
@@ -423,17 +405,17 @@
       .scanner-shell,
       #reader,
       #reader video {
-        min-height: 290px;
-        height: 290px !important;
+        min-height: 280px;
+        height: 280px !important;
       }
 
       .scan-box {
-        width: 86%;
-        height: 120px;
+        width: 82%;
+        height: 110px;
       }
 
       .scan-hint {
-        top: calc(50% + 82px);
+        top: calc(50% + 76px);
       }
     }
   </style>
@@ -472,12 +454,6 @@
       Lendo<span class="dots"></span>
     </div>
 
-    <div class="start-wrap">
-      <button class="start-btn" id="startBtn">📷 Iniciar câmera</button>
-    </div>
-
-    <div class="status-message" id="statusMessage"></div>
-
     <div class="cancel-wrap">
       <button class="cancel-btn" onclick="cancelarLeitura()">✕ Cancelar</button>
     </div>
@@ -497,7 +473,7 @@
   </div>
 
   <script>
-    const scannerReturnUrl = "https://inventario-patrimonial-orzkxr.flutterflow.app/scannerRetorno";
+    const appReturnUrl = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
     const readerElementId = "reader";
     let html5QrCode = null;
 
@@ -510,14 +486,6 @@
     let audioContext = null;
 
     const beepElement = document.getElementById("beepSound");
-    const startBtn = document.getElementById("startBtn");
-    const statusMessage = document.getElementById("statusMessage");
-
-    function setStatus(msg) {
-      if (statusMessage) {
-        statusMessage.textContent = msg || "";
-      }
-    }
 
     function onlyDigits(value) {
       return (value || "").replace(/\D/g, "");
@@ -550,10 +518,12 @@
         if (beepElement) {
           beepElement.muted = true;
           beepElement.currentTime = 0;
+
           const p = beepElement.play();
           if (p && typeof p.then === "function") {
             await p.catch(() => {});
           }
+
           beepElement.pause();
           beepElement.currentTime = 0;
           beepElement.muted = false;
@@ -599,13 +569,13 @@
 
         gainNode.gain.setValueAtTime(0.0001, ctx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.01);
-        gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.14);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.16);
 
         oscillator.connect(gainNode);
         gainNode.connect(ctx.destination);
 
         oscillator.start(ctx.currentTime);
-        oscillator.stop(ctx.currentTime + 0.14);
+        oscillator.stop(ctx.currentTime + 0.16);
       } catch (e) {
         console.warn("Falha no beep fallback:", e);
       }
@@ -613,7 +583,7 @@
 
     function vibrateOk() {
       if (navigator.vibrate) {
-        navigator.vibrate(120);
+        navigator.vibrate(180);
       }
     }
 
@@ -622,18 +592,6 @@
       if (overlay) {
         overlay.classList.add("show");
       }
-    }
-
-    function irParaScannerRetorno(params = {}) {
-      const url = new URL(scannerReturnUrl);
-
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== null && value !== undefined && value !== "") {
-          url.searchParams.set(key, value);
-        }
-      });
-
-      window.location.replace(url.toString());
     }
 
     function returnToApp(decodedText) {
@@ -645,11 +603,11 @@
         return;
       }
 
-      irParaScannerRetorno({ tombo });
+      window.location.href = `${appReturnUrl}?tombo=${encodeURIComponent(tombo)}`;
     }
 
-    function voltarParaAppCancelado() {
-      irParaScannerRetorno({ cancelado: "true" });
+    function voltarParaApp() {
+      window.location.href = appReturnUrl;
     }
 
     async function cancelarLeitura() {
@@ -661,7 +619,7 @@
       } catch (e) {
         console.warn("Erro ao parar câmera:", e);
       } finally {
-        voltarParaAppCancelado();
+        voltarParaApp();
       }
     }
 
@@ -691,23 +649,23 @@
 
       setTimeout(async () => {
         await encerrarScannerComRetorno(decodedText);
-      }, 80);
+      }, 180);
     }
 
     function onScanFailure(error) {
-      // console.debug(error);
+      // console.debug("Falha na leitura:", error);
     }
 
-    const qrboxWidth = 320;
-    const qrboxHeight = 130;
+    const qrboxWidth = 280;
+    const qrboxHeight = 110;
 
     const config = {
-      fps: 18,
+      fps: 10,
       qrbox: { width: qrboxWidth, height: qrboxHeight },
       aspectRatio: 1.7778,
       disableFlip: true,
       experimentalFeatures: {
-        useBarCodeDetectorIfSupported: true
+        useBarCodeDetectorIfSupported: false
       },
       formatsToSupport: [
         Html5QrcodeSupportedFormats.CODE_128,
@@ -717,14 +675,11 @@
 
     async function iniciarScanner() {
       if (cameraIniciada || scannerIniciando) return;
-      scannerIniciando = true;
 
-      if (startBtn) startBtn.disabled = true;
-      setStatus("Abrindo câmera...");
+      scannerIniciando = true;
 
       try {
         if (typeof Html5Qrcode === "undefined") {
-          setStatus("Biblioteca do leitor não carregou.");
           console.error("Biblioteca Html5Qrcode não carregou.");
           return;
         }
@@ -733,9 +688,9 @@
           html5QrCode = new Html5Qrcode(readerElementId);
         }
 
-        try {
-          await unlockAudio();
+        console.log("Tentando iniciar scanner rapidamente...");
 
+        try {
           await html5QrCode.start(
             { facingMode: "environment" },
             config,
@@ -744,15 +699,14 @@
           );
 
           cameraIniciada = true;
-          setStatus("Câmera ativa.");
-          if (startBtn) startBtn.style.display = "none";
+          console.log("Scanner iniciado com facingMode.");
         } catch (erroFacingMode) {
           console.warn("Falha com facingMode, tentando lista de câmeras...", erroFacingMode);
 
           const cameras = await Html5Qrcode.getCameras();
+          console.log("Câmeras encontradas:", cameras);
 
           if (!cameras || cameras.length === 0) {
-            setStatus("Nenhuma câmera encontrada.");
             console.error("Nenhuma câmera encontrada.");
             return;
           }
@@ -769,13 +723,13 @@
           );
 
           cameraIniciada = true;
-          setStatus("Câmera ativa.");
-          if (startBtn) startBtn.style.display = "none";
+          console.log("Scanner iniciado com cameraId.");
         }
 
         setTimeout(() => {
           try {
             const capabilities = html5QrCode.getRunningTrackCapabilities?.();
+            const settings = html5QrCode.getRunningTrackSettings?.();
 
             if (capabilities && html5QrCode.applyVideoConstraints) {
               const advanced = [];
@@ -786,21 +740,32 @@
                 }
               }
 
+              if (
+                capabilities.zoom &&
+                typeof capabilities.zoom.max === "number" &&
+                capabilities.zoom.max >= 1.5
+              ) {
+                const zoomDesejado = Math.min(1.5, capabilities.zoom.max);
+                const zoomAtual = settings && settings.zoom ? settings.zoom : 1;
+
+                if (zoomDesejado > zoomAtual) {
+                  advanced.push({ zoom: zoomDesejado });
+                }
+              }
+
               if (advanced.length > 0) {
                 html5QrCode.applyVideoConstraints({ advanced }).catch(err => {
-                  console.warn("Falha ao aplicar foco contínuo:", err);
+                  console.warn("Falha ao aplicar constraints:", err);
                 });
               }
             }
           } catch (e) {
-            console.warn("Falha ao ajustar foco:", e);
+            console.warn("Falha ao ajustar foco/zoom:", e);
           }
-        }, 200);
+        }, 300);
 
       } catch (e) {
         console.error("Erro ao iniciar scanner:", e);
-        setStatus("Não foi possível abrir a câmera.");
-        if (startBtn) startBtn.disabled = false;
       } finally {
         scannerIniciando = false;
       }
@@ -813,13 +778,9 @@
       document.addEventListener("pointerdown", tentar, { once: true, passive: true });
     }
 
-    if (startBtn) {
-      startBtn.addEventListener("click", iniciarScanner);
-    }
-
     window.addEventListener("load", () => {
       prepararAudioSemBloquearCamera();
-      setStatus("Toque em 'Iniciar câmera'.");
+      iniciarScanner();
     });
   </script>
 </body>
