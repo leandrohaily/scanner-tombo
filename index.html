@@ -7,9 +7,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Invent JUS">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
     * {
@@ -86,38 +86,18 @@
       overflow: hidden;
       border-radius: 22px;
       background: #000;
-      min-height: 320px;
+      min-height: 310px;
       box-shadow:
         inset 0 0 0 1px rgba(255,255,255,0.08),
         0 10px 30px rgba(0,0,0,0.32);
     }
 
-    .preview-wrap {
-      position: relative;
-      width: 100%;
-      min-height: 320px;
-      background: #000;
-      overflow: hidden;
-      border-radius: 22px;
-    }
-
-    #cameraPreview {
-      width: 100%;
-      height: 320px;
-      object-fit: cover;
-      display: none;
-      background: #000;
-      border-radius: 22px;
-    }
-
     #reader {
       width: 100%;
-      min-height: 320px;
-      background: transparent;
+      min-height: 310px;
+      background: #000;
       border: none !important;
-      position: absolute;
-      inset: 0;
-      z-index: 2;
+      position: relative;
       overflow: hidden;
     }
 
@@ -128,7 +108,6 @@
     #reader canvas {
       border: none !important;
       box-shadow: none !important;
-      background: transparent !important;
     }
 
     #reader__dashboard,
@@ -139,10 +118,14 @@
 
     #reader video {
       width: 100% !important;
-      height: 320px !important;
+      height: 310px !important;
       object-fit: cover !important;
       border-radius: 22px;
-      background: transparent !important;
+      background: #000;
+    }
+
+    #reader > div {
+      border: none !important;
     }
 
     #reader__scan_region {
@@ -160,9 +143,9 @@
       position: absolute;
       left: 50%;
       top: 50%;
-      width: 84%;
-      max-width: 330px;
-      height: 130px;
+      width: 78%;
+      max-width: 300px;
+      height: 120px;
       transform: translate(-50%, -50%);
       border: 2px solid rgba(255,255,255,0.95);
       border-radius: 12px;
@@ -191,10 +174,37 @@
       z-index: 3;
     }
 
-    .corner.tl { top: -2px; left: -2px; border-right: none; border-bottom: none; border-top-left-radius: 10px; }
-    .corner.tr { top: -2px; right: -2px; border-left: none; border-bottom: none; border-top-right-radius: 10px; }
-    .corner.bl { bottom: -2px; left: -2px; border-right: none; border-top: none; border-bottom-left-radius: 10px; }
-    .corner.br { bottom: -2px; right: -2px; border-left: none; border-top: none; border-bottom-right-radius: 10px; }
+    .corner.tl {
+      top: -2px;
+      left: -2px;
+      border-right: none;
+      border-bottom: none;
+      border-top-left-radius: 10px;
+    }
+
+    .corner.tr {
+      top: -2px;
+      right: -2px;
+      border-left: none;
+      border-bottom: none;
+      border-top-right-radius: 10px;
+    }
+
+    .corner.bl {
+      bottom: -2px;
+      left: -2px;
+      border-right: none;
+      border-top: none;
+      border-bottom-left-radius: 10px;
+    }
+
+    .corner.br {
+      bottom: -2px;
+      right: -2px;
+      border-left: none;
+      border-top: none;
+      border-bottom-right-radius: 10px;
+    }
 
     .laser-glow {
       position: absolute;
@@ -203,7 +213,12 @@
       height: 80px;
       top: 12%;
       transform: translateY(-50%);
-      background: linear-gradient(to bottom, rgba(255, 50, 50, 0), rgba(255, 50, 50, 0.18), rgba(255, 50, 50, 0));
+      background: linear-gradient(
+        to bottom,
+        rgba(255, 50, 50, 0),
+        rgba(255, 50, 50, 0.18),
+        rgba(255, 50, 50, 0)
+      );
       filter: blur(8px);
       animation: laserMoveGlow 2.2s ease-in-out infinite;
       z-index: 1;
@@ -216,8 +231,18 @@
       height: 4px;
       top: 12%;
       border-radius: 999px;
-      background: linear-gradient(90deg, rgba(255,40,40,0.12), #ff4747 18%, #ffffff 50%, #ff4747 82%, rgba(255,40,40,0.12));
-      box-shadow: 0 0 8px rgba(255, 60, 60, 0.95), 0 0 18px rgba(255, 60, 60, 0.70), 0 0 30px rgba(255, 60, 60, 0.35);
+      background: linear-gradient(
+        90deg,
+        rgba(255,40,40,0.12),
+        #ff4747 18%,
+        #ffffff 50%,
+        #ff4747 82%,
+        rgba(255,40,40,0.12)
+      );
+      box-shadow:
+        0 0 8px rgba(255, 60, 60, 0.95),
+        0 0 18px rgba(255, 60, 60, 0.70),
+        0 0 30px rgba(255, 60, 60, 0.35);
       animation: laserMove 2.2s ease-in-out infinite;
       z-index: 2;
     }
@@ -228,20 +253,38 @@
       top: 0;
       width: 30%;
       height: 100%;
-      background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.08), rgba(255,255,255,0));
+      background: linear-gradient(
+        90deg,
+        rgba(255,255,255,0),
+        rgba(255,255,255,0.08),
+        rgba(255,255,255,0)
+      );
       transform: skewX(-20deg);
       animation: sheenSweep 2.8s linear infinite;
       z-index: 1;
     }
 
-    @keyframes laserMove { 0% { top: 12%; } 50% { top: 88%; } 100% { top: 12%; } }
-    @keyframes laserMoveGlow { 0% { top: 12%; } 50% { top: 88%; } 100% { top: 12%; } }
-    @keyframes sheenSweep { 0% { left: -35%; } 100% { left: 115%; } }
+    @keyframes laserMove {
+      0%   { top: 12%; }
+      50%  { top: 88%; }
+      100% { top: 12%; }
+    }
+
+    @keyframes laserMoveGlow {
+      0%   { top: 12%; }
+      50%  { top: 88%; }
+      100% { top: 12%; }
+    }
+
+    @keyframes sheenSweep {
+      0%   { left: -35%; }
+      100% { left: 115%; }
+    }
 
     .scan-hint {
       position: absolute;
       left: 50%;
-      top: calc(50% + 88px);
+      top: calc(50% + 82px);
       transform: translateX(-50%);
       font-size: 12px;
       color: rgba(255,255,255,0.82);
@@ -270,26 +313,25 @@
     }
 
     @keyframes dots {
-      0% { content: ""; }
-      25% { content: "."; }
-      50% { content: ".."; }
-      75% { content: "..."; }
+      0%   { content: ""; }
+      25%  { content: "."; }
+      50%  { content: ".."; }
+      75%  { content: "..."; }
       100% { content: ""; }
     }
 
-    .start-wrap,
     .cancel-wrap {
       margin-top: 16px;
       display: flex;
       justify-content: center;
     }
 
-    .start-btn,
     .cancel-btn {
       min-width: 180px;
       height: 48px;
       border: none;
       border-radius: 14px;
+      background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%);
       color: #fff;
       font-size: 15px;
       font-weight: 700;
@@ -301,10 +343,6 @@
       transition: transform 0.15s ease, filter 0.15s ease;
     }
 
-    .start-btn { background: linear-gradient(180deg, #1565c0 0%, #0d47a1 100%); }
-    .cancel-btn { background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%); }
-
-    .start-btn:active,
     .cancel-btn:active {
       transform: scale(0.97);
       filter: brightness(1.06);
@@ -319,7 +357,7 @@
       justify-content: center;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.12s ease;
+      transition: opacity 0.18s ease;
       z-index: 9999;
     }
 
@@ -332,45 +370,52 @@
       text-align: center;
       color: white;
       padding: 24px;
-      animation: popIn 0.12s ease;
+      animation: popIn 0.18s ease;
     }
 
-    .checkmark { font-size: 72px; line-height: 1; margin-bottom: 12px; }
-    .successText { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
-    .successSubtext { font-size: 14px; opacity: 0.96; }
+    .checkmark {
+      font-size: 72px;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
 
-    .status-message {
-      margin-top: 12px;
-      text-align: center;
-      font-size: 13px;
-      color: rgba(255,255,255,0.82);
-      min-height: 18px;
-      line-height: 1.4;
-      white-space: pre-line;
+    .successText {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .successSubtext {
+      font-size: 14px;
+      opacity: 0.96;
     }
 
     @keyframes popIn {
-      from { transform: scale(0.82); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
+      from {
+        transform: scale(0.82);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
 
     @media (max-width: 420px) {
       .scanner-shell,
-      .preview-wrap,
-      #cameraPreview,
       #reader,
       #reader video {
-        min-height: 290px;
-        height: 290px !important;
+        min-height: 280px;
+        height: 280px !important;
       }
 
       .scan-box {
-        width: 86%;
-        height: 120px;
+        width: 82%;
+        height: 110px;
       }
 
       .scan-hint {
-        top: calc(50% + 82px);
+        top: calc(50% + 76px);
       }
     }
   </style>
@@ -387,10 +432,7 @@
     </div>
 
     <div class="scanner-shell">
-      <div class="preview-wrap">
-        <video id="cameraPreview" autoplay playsinline muted></video>
-        <div id="reader"></div>
-      </div>
+      <div id="reader"></div>
 
       <div class="overlay">
         <div class="scan-box">
@@ -398,6 +440,7 @@
           <div class="corner tr"></div>
           <div class="corner bl"></div>
           <div class="corner br"></div>
+
           <div class="laser-glow"></div>
           <div class="laser-line"></div>
           <div class="laser-sheen"></div>
@@ -411,14 +454,8 @@
       Lendo<span class="dots"></span>
     </div>
 
-    <div class="start-wrap">
-      <button class="start-btn" id="startBtn">📷 Iniciar câmera</button>
-    </div>
-
-    <div class="status-message" id="statusMessage"></div>
-
     <div class="cancel-wrap">
-      <button class="cancel-btn" id="cancelBtn">✕ Cancelar</button>
+      <button class="cancel-btn" onclick="cancelarLeitura()">✕ Cancelar</button>
     </div>
   </div>
 
@@ -436,27 +473,19 @@
   </div>
 
   <script>
-    const scannerReturnUrl = "https://inventario-patrimonial-orzkxr.flutterflow.app/scannerRetorno";
+    const appReturnUrl = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
     const readerElementId = "reader";
-
     let html5QrCode = null;
-    let previewStream = null;
+
     let jaLeu = false;
     let cameraIniciada = false;
     let leituraEmAndamento = false;
     let scannerIniciando = false;
+
     let audioUnlocked = false;
     let audioContext = null;
 
     const beepElement = document.getElementById("beepSound");
-    const startBtn = document.getElementById("startBtn");
-    const cancelBtn = document.getElementById("cancelBtn");
-    const statusMessage = document.getElementById("statusMessage");
-    const cameraPreview = document.getElementById("cameraPreview");
-
-    function setStatus(msg) {
-      if (statusMessage) statusMessage.textContent = msg || "";
-    }
 
     function onlyDigits(value) {
       return (value || "").replace(/\D/g, "");
@@ -470,7 +499,9 @@
     function criarAudioContext() {
       if (!audioContext) {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (AudioCtx) audioContext = new AudioCtx();
+        if (AudioCtx) {
+          audioContext = new AudioCtx();
+        }
       }
       return audioContext;
     }
@@ -480,13 +511,19 @@
 
       try {
         const ctx = criarAudioContext();
-        if (ctx && ctx.state === "suspended") await ctx.resume();
+        if (ctx && ctx.state === "suspended") {
+          await ctx.resume();
+        }
 
         if (beepElement) {
           beepElement.muted = true;
           beepElement.currentTime = 0;
+
           const p = beepElement.play();
-          if (p && typeof p.then === "function") await p.catch(() => {});
+          if (p && typeof p.then === "function") {
+            await p.catch(() => {});
+          }
+
           beepElement.pause();
           beepElement.currentTime = 0;
           beepElement.muted = false;
@@ -507,7 +544,9 @@
           beepElement.pause();
           beepElement.currentTime = 0;
           const p = beepElement.play();
-          if (p && typeof p.then === "function") await p;
+          if (p && typeof p.then === "function") {
+            await p;
+          }
           return;
         }
       } catch (e) {
@@ -517,7 +556,10 @@
       try {
         const ctx = criarAudioContext();
         if (!ctx) return;
-        if (ctx.state === "suspended") await ctx.resume();
+
+        if (ctx.state === "suspended") {
+          await ctx.resume();
+        }
 
         const oscillator = ctx.createOscillator();
         const gainNode = ctx.createGain();
@@ -527,93 +569,70 @@
 
         gainNode.gain.setValueAtTime(0.0001, ctx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.01);
-        gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.14);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.16);
 
         oscillator.connect(gainNode);
         gainNode.connect(ctx.destination);
 
         oscillator.start(ctx.currentTime);
-        oscillator.stop(ctx.currentTime + 0.14);
+        oscillator.stop(ctx.currentTime + 0.16);
       } catch (e) {
         console.warn("Falha no beep fallback:", e);
       }
     }
 
     function vibrateOk() {
-      if (navigator.vibrate) navigator.vibrate(120);
+      if (navigator.vibrate) {
+        navigator.vibrate(180);
+      }
     }
 
     function showSuccess() {
       const overlay = document.getElementById("successOverlay");
-      if (overlay) overlay.classList.add("show");
-    }
-
-    function irParaScannerRetorno(params = {}) {
-      const url = new URL(scannerReturnUrl);
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== null && value !== undefined && value !== "") {
-          url.searchParams.set(key, value);
-        }
-      });
-      window.location.replace(url.toString());
+      if (overlay) {
+        overlay.classList.add("show");
+      }
     }
 
     function returnToApp(decodedText) {
       const tombo = onlyDigits(decodedText);
+
       if (!tombo) {
         jaLeu = false;
         leituraEmAndamento = false;
         return;
       }
-      irParaScannerRetorno({ tombo });
+
+      window.location.href = `${appReturnUrl}?tombo=${encodeURIComponent(tombo)}`;
     }
 
-    function voltarParaAppCancelado() {
-      irParaScannerRetorno({ cancelado: "true" });
-    }
-
-    async function pararPreview() {
-      try {
-        if (previewStream) {
-          previewStream.getTracks().forEach(track => track.stop());
-          previewStream = null;
-        }
-
-        if (cameraPreview) {
-          cameraPreview.pause();
-          cameraPreview.srcObject = null;
-          cameraPreview.style.display = "none";
-        }
-      } catch (e) {
-        console.warn("Erro ao parar preview:", e);
-      }
+    function voltarParaApp() {
+      window.location.href = appReturnUrl;
     }
 
     async function cancelarLeitura() {
       try {
         if (cameraIniciada && html5QrCode) {
-          await html5QrCode.stop().catch(() => {});
+          await html5QrCode.stop();
           cameraIniciada = false;
         }
       } catch (e) {
         console.warn("Erro ao parar câmera:", e);
       } finally {
-        await pararPreview();
-        voltarParaAppCancelado();
+        voltarParaApp();
       }
     }
 
     async function encerrarScannerComRetorno(decodedText) {
       try {
         if (cameraIniciada && html5QrCode) {
-          await html5QrCode.stop().catch(() => {});
+          await html5QrCode.stop();
           cameraIniciada = false;
         }
       } catch (e) {
         console.warn("Erro ao encerrar scanner:", e);
       }
 
-      await pararPreview();
       returnToApp(decodedText);
     }
 
@@ -630,16 +649,19 @@
 
       setTimeout(async () => {
         await encerrarScannerComRetorno(decodedText);
-      }, 80);
+      }, 180);
     }
 
     function onScanFailure(error) {
-      // console.debug(error);
+      // console.debug("Falha na leitura:", error);
     }
 
+    const qrboxWidth = 280;
+    const qrboxHeight = 110;
+
     const config = {
-      fps: 12,
-      qrbox: { width: 300, height: 120 },
+      fps: 10,
+      qrbox: { width: qrboxWidth, height: qrboxHeight },
       aspectRatio: 1.7778,
       disableFlip: true,
       experimentalFeatures: {
@@ -651,131 +673,99 @@
       ]
     };
 
-    async function iniciarPreviewCamera() {
-      if (!window.isSecureContext) {
-        throw new Error("Página sem HTTPS.");
-      }
-
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error("getUserMedia indisponível.");
-      }
-
-      previewStream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: "environment",
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        },
-        audio: false
-      });
-
-      if (!cameraPreview) {
-        throw new Error("Elemento de preview não encontrado.");
-      }
-
-      cameraPreview.srcObject = previewStream;
-      cameraPreview.style.display = "block";
-
-      try {
-        await cameraPreview.play();
-      } catch (e) {
-        console.warn("Falha no play do preview:", e);
-      }
-
-      return true;
-    }
-
-    async function iniciarScannerHtml5Qrcode() {
-      if (typeof Html5Qrcode === "undefined") {
-        throw new Error("Biblioteca Html5Qrcode não carregou.");
-      }
-
-      if (!html5QrCode) {
-        html5QrCode = new Html5Qrcode(readerElementId, { verbose: false });
-      }
-
-      try {
-        await html5QrCode.start(
-          { facingMode: "environment" },
-          config,
-          onScanSuccess,
-          onScanFailure
-        );
-        return true;
-      } catch (erro1) {
-        console.warn("Falha com facingMode:", erro1);
-
-        const cameras = await Html5Qrcode.getCameras();
-        if (!cameras || cameras.length === 0) {
-          throw new Error("Nenhuma câmera encontrada para o scanner.");
-        }
-
-        const cameraPreferida =
-          cameras.find(c => /back|rear|environment|traseira/i.test(c.label || "")) ||
-          cameras[0];
-
-        await html5QrCode.start(
-          cameraPreferida.id,
-          config,
-          onScanSuccess,
-          onScanFailure
-        );
-        return true;
-      }
-    }
-
     async function iniciarScanner() {
       if (cameraIniciada || scannerIniciando) return;
 
       scannerIniciando = true;
-      if (startBtn) startBtn.disabled = true;
 
       try {
-        await unlockAudio();
+        if (typeof Html5Qrcode === "undefined") {
+          console.error("Biblioteca Html5Qrcode não carregou.");
+          return;
+        }
 
-        setStatus("Solicitando câmera...");
-        await iniciarPreviewCamera();
-        setStatus("Preview da câmera ativo.");
+        if (!html5QrCode) {
+          html5QrCode = new Html5Qrcode(readerElementId);
+        }
+
+        console.log("Tentando iniciar scanner rapidamente...");
 
         try {
-          await new Promise(resolve => setTimeout(resolve, 350));
-          setStatus("Iniciando leitura do código...");
-          await iniciarScannerHtml5Qrcode();
-
-          cameraIniciada = true;
-          setStatus("Câmera ativa. Aponte para o código.");
-          if (startBtn) startBtn.style.display = "none";
-        } catch (scanError) {
-          console.warn("Falha no html5-qrcode após preview:", scanError);
-
-          setStatus(
-            "A câmera abriu, mas o leitor não iniciou.\n" +
-            "Isso indica limitação do WebView para leitura automática."
+          await html5QrCode.start(
+            { facingMode: "environment" },
+            config,
+            onScanSuccess,
+            onScanFailure
           );
 
-          if (startBtn) {
-            startBtn.disabled = false;
-            startBtn.textContent = "📷 Tentar leitura novamente";
+          cameraIniciada = true;
+          console.log("Scanner iniciado com facingMode.");
+        } catch (erroFacingMode) {
+          console.warn("Falha com facingMode, tentando lista de câmeras...", erroFacingMode);
+
+          const cameras = await Html5Qrcode.getCameras();
+          console.log("Câmeras encontradas:", cameras);
+
+          if (!cameras || cameras.length === 0) {
+            console.error("Nenhuma câmera encontrada.");
+            return;
           }
+
+          const cameraPreferida =
+            cameras.find(c => /back|rear|environment|traseira/i.test(c.label)) ||
+            cameras[0];
+
+          await html5QrCode.start(
+            cameraPreferida.id,
+            config,
+            onScanSuccess,
+            onScanFailure
+          );
+
+          cameraIniciada = true;
+          console.log("Scanner iniciado com cameraId.");
         }
+
+        setTimeout(() => {
+          try {
+            const capabilities = html5QrCode.getRunningTrackCapabilities?.();
+            const settings = html5QrCode.getRunningTrackSettings?.();
+
+            if (capabilities && html5QrCode.applyVideoConstraints) {
+              const advanced = [];
+
+              if (capabilities.focusMode && Array.isArray(capabilities.focusMode)) {
+                if (capabilities.focusMode.includes("continuous")) {
+                  advanced.push({ focusMode: "continuous" });
+                }
+              }
+
+              if (
+                capabilities.zoom &&
+                typeof capabilities.zoom.max === "number" &&
+                capabilities.zoom.max >= 1.5
+              ) {
+                const zoomDesejado = Math.min(1.5, capabilities.zoom.max);
+                const zoomAtual = settings && settings.zoom ? settings.zoom : 1;
+
+                if (zoomDesejado > zoomAtual) {
+                  advanced.push({ zoom: zoomDesejado });
+                }
+              }
+
+              if (advanced.length > 0) {
+                html5QrCode.applyVideoConstraints({ advanced }).catch(err => {
+                  console.warn("Falha ao aplicar constraints:", err);
+                });
+              }
+            }
+          } catch (e) {
+            console.warn("Falha ao ajustar foco/zoom:", e);
+          }
+        }, 300);
+
       } catch (e) {
-        console.error("Erro ao iniciar câmera:", e);
-
-        const msg = String(e && e.message ? e.message : e);
-
-        if (msg.includes("Permission") || msg.includes("denied")) {
-          setStatus("Permissão da câmera negada.");
-        } else if (msg.includes("HTTPS")) {
-          setStatus("A página precisa estar em HTTPS.");
-        } else if (msg.includes("getUserMedia")) {
-          setStatus("Este WebView não liberou a câmera.");
-        } else if (msg.includes("NotReadableError")) {
-          setStatus("A câmera está ocupada por outro app.");
-        } else {
-          setStatus("Não foi possível abrir a câmera.");
-        }
-
-        if (startBtn) startBtn.disabled = false;
+        console.error("Erro ao iniciar scanner:", e);
       } finally {
         scannerIniciando = false;
       }
@@ -788,12 +778,9 @@
       document.addEventListener("pointerdown", tentar, { once: true, passive: true });
     }
 
-    if (startBtn) startBtn.addEventListener("click", iniciarScanner);
-    if (cancelBtn) cancelBtn.addEventListener("click", cancelarLeitura);
-
     window.addEventListener("load", () => {
       prepararAudioSemBloquearCamera();
-      setStatus("Toque em 'Iniciar câmera'.");
+      iniciarScanner();
     });
   </script>
 </body>
