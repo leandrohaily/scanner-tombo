@@ -596,7 +596,7 @@
     }
 
     function montarUrlRetorno(tombo = "") {
-      const url = new URL(appReturnUrl, window.location.origin);
+      const url = new URL(appReturnUrl);
 
       if (tombo) {
         url.searchParams.set("tombo", tombo);
@@ -619,14 +619,6 @@
       }
     }
 
-    function tentarFecharJanela() {
-      try {
-        window.close();
-      } catch (e) {
-        console.warn("window.close falhou:", e);
-      }
-    }
-
     function executarRetorno(tombo = "") {
       if (retornoExecutado) return;
       retornoExecutado = true;
@@ -635,27 +627,8 @@
 
       const urlRetorno = montarUrlRetorno(tombo);
 
-      if (window.history.length > 1) {
-        try {
-          window.history.back();
-
-          setTimeout(() => {
-            if (document.visibilityState === "visible") {
-              window.location.replace(urlRetorno);
-            }
-          }, 700);
-
-          return;
-        } catch (e) {
-          console.warn("history.back falhou:", e);
-        }
-      }
-
-      tentarFecharJanela();
-
-      setTimeout(() => {
-        window.location.replace(urlRetorno);
-      }, 150);
+      // Sempre volta direto com a URL correta
+      window.location.href = urlRetorno;
     }
 
     function returnToApp(decodedText) {
