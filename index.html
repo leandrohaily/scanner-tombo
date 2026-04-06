@@ -320,18 +320,19 @@
       100% { content: ""; }
     }
 
+    .start-wrap,
     .cancel-wrap {
       margin-top: 16px;
       display: flex;
       justify-content: center;
     }
 
+    .start-btn,
     .cancel-btn {
       min-width: 180px;
       height: 48px;
       border: none;
       border-radius: 14px;
-      background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%);
       color: #fff;
       font-size: 15px;
       font-weight: 700;
@@ -343,6 +344,15 @@
       transition: transform 0.15s ease, filter 0.15s ease;
     }
 
+    .start-btn {
+      background: linear-gradient(180deg, #1565c0 0%, #0d47a1 100%);
+    }
+
+    .cancel-btn {
+      background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%);
+    }
+
+    .start-btn:active,
     .cancel-btn:active {
       transform: scale(0.97);
       filter: brightness(1.06);
@@ -388,6 +398,14 @@
     .successSubtext {
       font-size: 14px;
       opacity: 0.96;
+    }
+
+    .status-message {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 13px;
+      color: rgba(255,255,255,0.82);
+      min-height: 18px;
     }
 
     @keyframes popIn {
@@ -454,6 +472,12 @@
       Lendo<span class="dots"></span>
     </div>
 
+    <div class="start-wrap">
+      <button class="start-btn" id="startBtn">📷 Iniciar câmera</button>
+    </div>
+
+    <div class="status-message" id="statusMessage"></div>
+
     <div class="cancel-wrap">
       <button class="cancel-btn" onclick="cancelarLeitura()">✕ Cancelar</button>
     </div>
@@ -486,6 +510,14 @@
     let audioContext = null;
 
     const beepElement = document.getElementById("beepSound");
+    const startBtn = document.getElementById("startBtn");
+    const statusMessage = document.getElementById("statusMessage");
+
+    function setStatus(msg) {
+      if (statusMessage) {
+        statusMessage.textContent = msg || "";
+      }
+    }
 
     function onlyDigits(value) {
       return (value || "").replace(/\D/g, "");
@@ -687,8 +719,12 @@
       if (cameraIniciada || scannerIniciando) return;
       scannerIniciando = true;
 
+      if (startBtn) startBtn.disabled = true;
+      setStatus("Abrindo câmera...");
+
       try {
         if (typeof Html5Qrcode === "undefined") {
+          setStatus("Biblioteca do leitor não carregou.");
           console.error("Biblioteca Html5Qrcode não carregou.");
           return;
         }
@@ -698,20 +734,25 @@
         }
 
         try {
+          await unlockAudio();
+
           await html5QrCode.start(
-            { facingMode: { ideal: "environment" } },
+            { facingMode: "environment" },
             config,
             onScanSuccess,
             onScanFailure
           );
 
           cameraIniciada = true;
+          setStatus("Câmera ativa.");
+          if (startBtn) startBtn.style.display = "none";
         } catch (erroFacingMode) {
           console.warn("Falha com facingMode, tentando lista de câmeras...", erroFacingMode);
 
           const cameras = await Html5Qrcode.getCameras();
 
           if (!cameras || cameras.length === 0) {
+            setStatus("Nenhuma câmera encontrada.");
             console.error("Nenhuma câmera encontrada.");
             return;
           }
@@ -728,6 +769,8 @@
           );
 
           cameraIniciada = true;
+          setStatus("Câmera ativa.");
+          if (startBtn) startBtn.style.display = "none";
         }
 
         setTimeout(() => {
@@ -756,6 +799,8 @@
 
       } catch (e) {
         console.error("Erro ao iniciar scanner:", e);
+        setStatus("Não foi possível abrir a câmera.");
+        if (startBtn) startBtn.disabled = false;
       } finally {
         scannerIniciando = false;
       }
@@ -768,9 +813,13 @@
       document.addEventListener("pointerdown", tentar, { once: true, passive: true });
     }
 
+    if (startBtn) {
+      startBtn.addEventListener("click", iniciarScanner);
+    }
+
     window.addEventListener("load", () => {
       prepararAudioSemBloquearCamera();
-      iniciarScanner();
+      setStatus("Toque em 'Iniciar câmera'.");
     });
   </script>
 </body>
