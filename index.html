@@ -475,7 +475,7 @@
   <script>
     const appReturnUrl = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
     const readerElementId = "reader";
-    const html5QrCode = new Html5Qrcode(readerElementId);
+    let html5QrCode = null;
 
     let jaLeu = false;
     let cameraIniciada = false;
@@ -518,9 +518,9 @@
           beepElement.muted = true;
           beepElement.currentTime = 0;
 
-          const playPromise = beepElement.play();
-          if (playPromise && typeof playPromise.then === "function") {
-            await playPromise;
+          const p = beepElement.play();
+          if (p && typeof p.then === "function") {
+            await p.catch(() => {});
           }
 
           beepElement.pause();
@@ -531,43 +531,25 @@
         audioUnlocked = true;
         return true;
       } catch (e) {
-        try {
-          if (beepElement) {
-            beepElement.pause();
-            beepElement.currentTime = 0;
-            beepElement.muted = false;
-          }
-        } catch (_) {}
-
+        console.warn("Falha ao desbloquear áudio:", e);
         return false;
       }
     }
 
-    async function tentarDesbloquearAudioPorInteracao() {
-      await unlockAudio();
-    }
-
-    document.addEventListener("touchstart", tentarDesbloquearAudioPorInteracao, { passive: true, once: true });
-    document.addEventListener("click", tentarDesbloquearAudioPorInteracao, { passive: true, once: true });
-    document.addEventListener("pointerdown", tentarDesbloquearAudioPorInteracao, { passive: true, once: true });
-
     async function playBeep() {
       try {
-        await unlockAudio();
-      } catch (_) {}
-
-      if (beepElement) {
-        try {
+        if (beepElement) {
+          await unlockAudio();
           beepElement.pause();
           beepElement.currentTime = 0;
-
-          const playPromise = beepElement.play();
-          if (playPromise && typeof playPromise.then === "function") {
-            await playPromise;
+          const p = beepElement.play();
+          if (p && typeof p.then === "function") {
+            await p;
           }
           return;
-        } catch (e) {
         }
+      } catch (e) {
+        console.warn("Fallback para Web Audio:", e);
       }
 
       try {
@@ -594,6 +576,7 @@
         oscillator.start(ctx.currentTime);
         oscillator.stop(ctx.currentTime + 0.16);
       } catch (e) {
+        console.warn("Falha no beep fallback:", e);
       }
     }
 
@@ -628,11 +611,12 @@
 
     async function cancelarLeitura() {
       try {
-        if (cameraIniciada) {
+        if (cameraIniciada && html5QrCode) {
           await html5QrCode.stop();
           cameraIniciada = false;
         }
       } catch (e) {
+        console.warn("Erro ao parar câmera:", e);
       } finally {
         voltarParaApp();
       }
@@ -640,11 +624,12 @@
 
     async function encerrarScannerComRetorno(decodedText) {
       try {
-        if (cameraIniciada) {
+        if (cameraIniciada && html5QrCode) {
           await html5QrCode.stop();
           cameraIniciada = false;
         }
       } catch (e) {
+        console.warn("Erro ao encerrar scanner:", e);
       }
 
       setTimeout(() => {
@@ -654,10 +639,7 @@
 
     async function onScanSuccess(decodedText) {
       if (jaLeu || leituraEmAndamento) return;
-
-      if (!isCodigoValido(decodedText)) {
-        return;
-      }
+      if (!isCodigoValido(decodedText)) return;
 
       jaLeu = true;
       leituraEmAndamento = true;
@@ -665,10 +647,11 @@
       await playBeep();
       vibrateOk();
       showSuccess();
-      encerrarScannerComRetorno(decodedText);
+      await encerrarScannerComRetorno(decodedText);
     }
 
-    function onScanFailure() {
+    function onScanFailure(error) {
+      // console.debug("Falha na leitura:", error);
     }
 
     const qrboxWidth = 280;
@@ -694,11 +677,18 @@
 
     async function iniciarScanner() {
       try {
-        await unlockAudio();
+        if (typeof Html5Qrcode === "undefined") {
+          console.error("Biblioteca Html5Qrcode não carregou.");
+          return;
+        }
+
+        html5QrCode = new Html5Qrcode(readerElementId);
 
         const cameras = await Html5Qrcode.getCameras();
+        console.log("Câmeras encontradas:", cameras);
 
         if (!cameras || cameras.length === 0) {
+          console.error("Nenhuma câmera encontrada.");
           return;
         }
 
@@ -714,6 +704,7 @@
         );
 
         cameraIniciada = true;
+        console.log("Scanner iniciado com sucesso.");
 
         try {
           const capabilities = html5QrCode.getRunningTrackCapabilities?.();
@@ -741,16 +732,30 @@
             }
 
             if (advanced.length > 0) {
-              html5QrCode.applyVideoConstraints({ advanced }).catch(() => {});
+              html5QrCode.applyVideoConstraints({ advanced }).catch(err => {
+                console.warn("Falha ao aplicar constraints:", err);
+              });
             }
           }
         } catch (e) {
+          console.warn("Falha ao ajustar foco/zoom:", e);
         }
       } catch (e) {
+        console.error("Erro ao iniciar scanner:", e);
       }
     }
 
-    iniciarScanner();
+    function prepararAudioSemBloquearCamera() {
+      const tentar = () => unlockAudio().catch(() => {});
+      document.addEventListener("touchstart", tentar, { once: true, passive: true });
+      document.addEventListener("click", tentar, { once: true, passive: true });
+      document.addEventListener("pointerdown", tentar, { once: true, passive: true });
+    }
+
+    window.addEventListener("load", () => {
+      prepararAudioSemBloquearCamera();
+      iniciarScanner();
+    });
   </script>
 </body>
 </html>
