@@ -459,8 +459,9 @@
     </div>
   </div>
 
-  <audio id="beepSound" preload="auto">
+  <audio id="beepSound" preload="auto" playsinline webkit-playsinline>
     <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+    <source src="https://www.soundjay.com/button/sounds/beep-07a.mp3" type="audio/mpeg">
   </audio>
 
   <div id="successOverlay">
@@ -480,6 +481,11 @@
     let cameraIniciada = false;
     let leituraEmAndamento = false;
 
+    let audioUnlocked = false;
+    let audioContext = null;
+
+    const beepElement = document.getElementById("beepSound");
+
     function onlyDigits(value) {
       return (value || "").replace(/\D/g, "");
     }
@@ -489,11 +495,105 @@
       return digits.length > 0 && digits.length <= 5;
     }
 
-    function playBeep() {
-      const beep = document.getElementById("beepSound");
-      if (beep) {
-        beep.currentTime = 0;
-        beep.play().catch(() => {});
+    function criarAudioContext() {
+      if (!audioContext) {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+          audioContext = new AudioCtx();
+        }
+      }
+      return audioContext;
+    }
+
+    async function unlockAudio() {
+      if (audioUnlocked) return true;
+
+      try {
+        const ctx = criarAudioContext();
+        if (ctx && ctx.state === "suspended") {
+          await ctx.resume();
+        }
+
+        if (beepElement) {
+          beepElement.muted = true;
+          beepElement.currentTime = 0;
+
+          const playPromise = beepElement.play();
+          if (playPromise && typeof playPromise.then === "function") {
+            await playPromise;
+          }
+
+          beepElement.pause();
+          beepElement.currentTime = 0;
+          beepElement.muted = false;
+        }
+
+        audioUnlocked = true;
+        return true;
+      } catch (e) {
+        try {
+          if (beepElement) {
+            beepElement.pause();
+            beepElement.currentTime = 0;
+            beepElement.muted = false;
+          }
+        } catch (_) {}
+
+        return false;
+      }
+    }
+
+    async function tentarDesbloquearAudioPorInteracao() {
+      await unlockAudio();
+    }
+
+    document.addEventListener("touchstart", tentarDesbloquearAudioPorInteracao, { passive: true, once: true });
+    document.addEventListener("click", tentarDesbloquearAudioPorInteracao, { passive: true, once: true });
+    document.addEventListener("pointerdown", tentarDesbloquearAudioPorInteracao, { passive: true, once: true });
+
+    async function playBeep() {
+      try {
+        await unlockAudio();
+      } catch (_) {}
+
+      if (beepElement) {
+        try {
+          beepElement.pause();
+          beepElement.currentTime = 0;
+
+          const playPromise = beepElement.play();
+          if (playPromise && typeof playPromise.then === "function") {
+            await playPromise;
+          }
+          return;
+        } catch (e) {
+        }
+      }
+
+      try {
+        const ctx = criarAudioContext();
+        if (!ctx) return;
+
+        if (ctx.state === "suspended") {
+          await ctx.resume();
+        }
+
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(1100, ctx.currentTime);
+
+        gainNode.gain.setValueAtTime(0.0001, ctx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.16);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        oscillator.start(ctx.currentTime);
+        oscillator.stop(ctx.currentTime + 0.16);
+      } catch (e) {
       }
     }
 
@@ -552,7 +652,7 @@
       }, 850);
     }
 
-    function onScanSuccess(decodedText) {
+    async function onScanSuccess(decodedText) {
       if (jaLeu || leituraEmAndamento) return;
 
       if (!isCodigoValido(decodedText)) {
@@ -562,7 +662,7 @@
       jaLeu = true;
       leituraEmAndamento = true;
 
-      playBeep();
+      await playBeep();
       vibrateOk();
       showSuccess();
       encerrarScannerComRetorno(decodedText);
@@ -594,6 +694,8 @@
 
     async function iniciarScanner() {
       try {
+        await unlockAudio();
+
         const cameras = await Html5Qrcode.getCameras();
 
         if (!cameras || cameras.length === 0) {
