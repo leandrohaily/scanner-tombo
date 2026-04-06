@@ -7,9 +7,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Invent JUS">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
 
-  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
   <style>
     * {
@@ -86,7 +86,7 @@
       overflow: hidden;
       border-radius: 22px;
       background: #000;
-      min-height: 310px;
+      min-height: 320px;
       box-shadow:
         inset 0 0 0 1px rgba(255,255,255,0.08),
         0 10px 30px rgba(0,0,0,0.32);
@@ -94,7 +94,7 @@
 
     #reader {
       width: 100%;
-      min-height: 310px;
+      min-height: 320px;
       background: #000;
       border: none !important;
       position: relative;
@@ -118,14 +118,12 @@
 
     #reader video {
       width: 100% !important;
-      height: 310px !important;
+      height: 320px !important;
       object-fit: cover !important;
       border-radius: 22px;
       background: #000;
-    }
-
-    #reader > div {
-      border: none !important;
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
     }
 
     #reader__scan_region {
@@ -143,9 +141,9 @@
       position: absolute;
       left: 50%;
       top: 50%;
-      width: 78%;
-      max-width: 300px;
-      height: 120px;
+      width: 84%;
+      max-width: 330px;
+      height: 130px;
       transform: translate(-50%, -50%);
       border: 2px solid rgba(255,255,255,0.95);
       border-radius: 12px;
@@ -174,37 +172,10 @@
       z-index: 3;
     }
 
-    .corner.tl {
-      top: -2px;
-      left: -2px;
-      border-right: none;
-      border-bottom: none;
-      border-top-left-radius: 10px;
-    }
-
-    .corner.tr {
-      top: -2px;
-      right: -2px;
-      border-left: none;
-      border-bottom: none;
-      border-top-right-radius: 10px;
-    }
-
-    .corner.bl {
-      bottom: -2px;
-      left: -2px;
-      border-right: none;
-      border-top: none;
-      border-bottom-left-radius: 10px;
-    }
-
-    .corner.br {
-      bottom: -2px;
-      right: -2px;
-      border-left: none;
-      border-top: none;
-      border-bottom-right-radius: 10px;
-    }
+    .corner.tl { top: -2px; left: -2px; border-right: none; border-bottom: none; border-top-left-radius: 10px; }
+    .corner.tr { top: -2px; right: -2px; border-left: none; border-bottom: none; border-top-right-radius: 10px; }
+    .corner.bl { bottom: -2px; left: -2px; border-right: none; border-top: none; border-bottom-left-radius: 10px; }
+    .corner.br { bottom: -2px; right: -2px; border-left: none; border-top: none; border-bottom-right-radius: 10px; }
 
     .laser-glow {
       position: absolute;
@@ -213,12 +184,7 @@
       height: 80px;
       top: 12%;
       transform: translateY(-50%);
-      background: linear-gradient(
-        to bottom,
-        rgba(255, 50, 50, 0),
-        rgba(255, 50, 50, 0.18),
-        rgba(255, 50, 50, 0)
-      );
+      background: linear-gradient(to bottom, rgba(255, 50, 50, 0), rgba(255, 50, 50, 0.18), rgba(255, 50, 50, 0));
       filter: blur(8px);
       animation: laserMoveGlow 2.2s ease-in-out infinite;
       z-index: 1;
@@ -231,18 +197,8 @@
       height: 4px;
       top: 12%;
       border-radius: 999px;
-      background: linear-gradient(
-        90deg,
-        rgba(255,40,40,0.12),
-        #ff4747 18%,
-        #ffffff 50%,
-        #ff4747 82%,
-        rgba(255,40,40,0.12)
-      );
-      box-shadow:
-        0 0 8px rgba(255, 60, 60, 0.95),
-        0 0 18px rgba(255, 60, 60, 0.70),
-        0 0 30px rgba(255, 60, 60, 0.35);
+      background: linear-gradient(90deg, rgba(255,40,40,0.12), #ff4747 18%, #ffffff 50%, #ff4747 82%, rgba(255,40,40,0.12));
+      box-shadow: 0 0 8px rgba(255, 60, 60, 0.95), 0 0 18px rgba(255, 60, 60, 0.70), 0 0 30px rgba(255, 60, 60, 0.35);
       animation: laserMove 2.2s ease-in-out infinite;
       z-index: 2;
     }
@@ -253,38 +209,20 @@
       top: 0;
       width: 30%;
       height: 100%;
-      background: linear-gradient(
-        90deg,
-        rgba(255,255,255,0),
-        rgba(255,255,255,0.08),
-        rgba(255,255,255,0)
-      );
+      background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.08), rgba(255,255,255,0));
       transform: skewX(-20deg);
       animation: sheenSweep 2.8s linear infinite;
       z-index: 1;
     }
 
-    @keyframes laserMove {
-      0%   { top: 12%; }
-      50%  { top: 88%; }
-      100% { top: 12%; }
-    }
-
-    @keyframes laserMoveGlow {
-      0%   { top: 12%; }
-      50%  { top: 88%; }
-      100% { top: 12%; }
-    }
-
-    @keyframes sheenSweep {
-      0%   { left: -35%; }
-      100% { left: 115%; }
-    }
+    @keyframes laserMove { 0% { top: 12%; } 50% { top: 88%; } 100% { top: 12%; } }
+    @keyframes laserMoveGlow { 0% { top: 12%; } 50% { top: 88%; } 100% { top: 12%; } }
+    @keyframes sheenSweep { 0% { left: -35%; } 100% { left: 115%; } }
 
     .scan-hint {
       position: absolute;
       left: 50%;
-      top: calc(50% + 82px);
+      top: calc(50% + 88px);
       transform: translateX(-50%);
       font-size: 12px;
       color: rgba(255,255,255,0.82);
@@ -313,25 +251,24 @@
     }
 
     @keyframes dots {
-      0%   { content: ""; }
-      25%  { content: "."; }
-      50%  { content: ".."; }
-      75%  { content: "..."; }
+      0% { content: ""; }
+      25% { content: "."; }
+      50% { content: ".."; }
+      75% { content: "..."; }
       100% { content: ""; }
     }
 
-    .cancel-wrap {
+    .start-wrap, .cancel-wrap {
       margin-top: 16px;
       display: flex;
       justify-content: center;
     }
 
-    .cancel-btn {
+    .start-btn, .cancel-btn {
       min-width: 180px;
       height: 48px;
       border: none;
       border-radius: 14px;
-      background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%);
       color: #fff;
       font-size: 15px;
       font-weight: 700;
@@ -343,10 +280,9 @@
       transition: transform 0.15s ease, filter 0.15s ease;
     }
 
-    .cancel-btn:active {
-      transform: scale(0.97);
-      filter: brightness(1.06);
-    }
+    .start-btn { background: linear-gradient(180deg, #1565c0 0%, #0d47a1 100%); }
+    .cancel-btn { background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%); }
+    .start-btn:active, .cancel-btn:active { transform: scale(0.97); filter: brightness(1.06); }
 
     #successOverlay {
       position: fixed;
@@ -357,7 +293,7 @@
       justify-content: center;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.18s ease;
+      transition: opacity 0.12s ease;
       z-index: 9999;
     }
 
@@ -370,52 +306,38 @@
       text-align: center;
       color: white;
       padding: 24px;
-      animation: popIn 0.18s ease;
+      animation: popIn 0.12s ease;
     }
 
-    .checkmark {
-      font-size: 72px;
-      line-height: 1;
-      margin-bottom: 12px;
-    }
+    .checkmark { font-size: 72px; line-height: 1; margin-bottom: 12px; }
+    .successText { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+    .successSubtext { font-size: 14px; opacity: 0.96; }
 
-    .successText {
-      font-size: 22px;
-      font-weight: 800;
-      margin-bottom: 6px;
-    }
-
-    .successSubtext {
-      font-size: 14px;
-      opacity: 0.96;
+    .status-message {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 13px;
+      color: rgba(255,255,255,0.82);
+      min-height: 18px;
+      line-height: 1.4;
     }
 
     @keyframes popIn {
-      from {
-        transform: scale(0.82);
-        opacity: 0;
-      }
-      to {
-        transform: scale(1);
-        opacity: 1;
-      }
+      from { transform: scale(0.82); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
     }
 
     @media (max-width: 420px) {
-      .scanner-shell,
-      #reader,
-      #reader video {
-        min-height: 280px;
-        height: 280px !important;
+      .scanner-shell, #reader, #reader video {
+        min-height: 290px;
+        height: 290px !important;
       }
-
       .scan-box {
-        width: 82%;
-        height: 110px;
+        width: 86%;
+        height: 120px;
       }
-
       .scan-hint {
-        top: calc(50% + 76px);
+        top: calc(50% + 82px);
       }
     }
   </style>
@@ -440,7 +362,6 @@
           <div class="corner tr"></div>
           <div class="corner bl"></div>
           <div class="corner br"></div>
-
           <div class="laser-glow"></div>
           <div class="laser-line"></div>
           <div class="laser-sheen"></div>
@@ -454,8 +375,14 @@
       Lendo<span class="dots"></span>
     </div>
 
+    <div class="start-wrap">
+      <button class="start-btn" id="startBtn">📷 Iniciar câmera</button>
+    </div>
+
+    <div class="status-message" id="statusMessage"></div>
+
     <div class="cancel-wrap">
-      <button class="cancel-btn" onclick="cancelarLeitura()">✕ Cancelar</button>
+      <button class="cancel-btn" id="cancelBtn">✕ Cancelar</button>
     </div>
   </div>
 
@@ -473,19 +400,25 @@
   </div>
 
   <script>
-    const appReturnUrl = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
+    const scannerReturnUrl = "https://inventario-patrimonial-orzkxr.flutterflow.app/scannerRetorno";
     const readerElementId = "reader";
-    let html5QrCode = null;
 
+    let html5QrCode = null;
     let jaLeu = false;
     let cameraIniciada = false;
     let leituraEmAndamento = false;
     let scannerIniciando = false;
-
     let audioUnlocked = false;
     let audioContext = null;
 
     const beepElement = document.getElementById("beepSound");
+    const startBtn = document.getElementById("startBtn");
+    const cancelBtn = document.getElementById("cancelBtn");
+    const statusMessage = document.getElementById("statusMessage");
+
+    function setStatus(msg) {
+      if (statusMessage) statusMessage.textContent = msg || "";
+    }
 
     function onlyDigits(value) {
       return (value || "").replace(/\D/g, "");
@@ -499,9 +432,7 @@
     function criarAudioContext() {
       if (!audioContext) {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (AudioCtx) {
-          audioContext = new AudioCtx();
-        }
+        if (AudioCtx) audioContext = new AudioCtx();
       }
       return audioContext;
     }
@@ -511,19 +442,13 @@
 
       try {
         const ctx = criarAudioContext();
-        if (ctx && ctx.state === "suspended") {
-          await ctx.resume();
-        }
+        if (ctx && ctx.state === "suspended") await ctx.resume();
 
         if (beepElement) {
           beepElement.muted = true;
           beepElement.currentTime = 0;
-
           const p = beepElement.play();
-          if (p && typeof p.then === "function") {
-            await p.catch(() => {});
-          }
-
+          if (p && typeof p.then === "function") await p.catch(() => {});
           beepElement.pause();
           beepElement.currentTime = 0;
           beepElement.muted = false;
@@ -544,9 +469,7 @@
           beepElement.pause();
           beepElement.currentTime = 0;
           const p = beepElement.play();
-          if (p && typeof p.then === "function") {
-            await p;
-          }
+          if (p && typeof p.then === "function") await p;
           return;
         }
       } catch (e) {
@@ -556,10 +479,7 @@
       try {
         const ctx = criarAudioContext();
         if (!ctx) return;
-
-        if (ctx.state === "suspended") {
-          await ctx.resume();
-        }
+        if (ctx.state === "suspended") await ctx.resume();
 
         const oscillator = ctx.createOscillator();
         const gainNode = ctx.createGain();
@@ -569,45 +489,49 @@
 
         gainNode.gain.setValueAtTime(0.0001, ctx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.01);
-        gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.16);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.14);
 
         oscillator.connect(gainNode);
         gainNode.connect(ctx.destination);
 
         oscillator.start(ctx.currentTime);
-        oscillator.stop(ctx.currentTime + 0.16);
+        oscillator.stop(ctx.currentTime + 0.14);
       } catch (e) {
         console.warn("Falha no beep fallback:", e);
       }
     }
 
     function vibrateOk() {
-      if (navigator.vibrate) {
-        navigator.vibrate(180);
-      }
+      if (navigator.vibrate) navigator.vibrate(120);
     }
 
     function showSuccess() {
       const overlay = document.getElementById("successOverlay");
-      if (overlay) {
-        overlay.classList.add("show");
-      }
+      if (overlay) overlay.classList.add("show");
+    }
+
+    function irParaScannerRetorno(params = {}) {
+      const url = new URL(scannerReturnUrl);
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== "") {
+          url.searchParams.set(key, value);
+        }
+      });
+      window.location.replace(url.toString());
     }
 
     function returnToApp(decodedText) {
       const tombo = onlyDigits(decodedText);
-
       if (!tombo) {
         jaLeu = false;
         leituraEmAndamento = false;
         return;
       }
-
-      window.location.href = `${appReturnUrl}?tombo=${encodeURIComponent(tombo)}`;
+      irParaScannerRetorno({ tombo });
     }
 
-    function voltarParaApp() {
-      window.location.href = appReturnUrl;
+    function voltarParaAppCancelado() {
+      irParaScannerRetorno({ cancelado: "true" });
     }
 
     async function cancelarLeitura() {
@@ -619,7 +543,7 @@
       } catch (e) {
         console.warn("Erro ao parar câmera:", e);
       } finally {
-        voltarParaApp();
+        voltarParaAppCancelado();
       }
     }
 
@@ -632,7 +556,6 @@
       } catch (e) {
         console.warn("Erro ao encerrar scanner:", e);
       }
-
       returnToApp(decodedText);
     }
 
@@ -649,88 +572,120 @@
 
       setTimeout(async () => {
         await encerrarScannerComRetorno(decodedText);
-      }, 180);
+      }, 80);
     }
 
     function onScanFailure(error) {
-      // console.debug("Falha na leitura:", error);
+      // console.debug(error);
     }
 
-    const qrboxWidth = 280;
-    const qrboxHeight = 110;
-
     const config = {
-      fps: 10,
-      qrbox: { width: qrboxWidth, height: qrboxHeight },
+      fps: 15,
+      qrbox: { width: 320, height: 130 },
       aspectRatio: 1.7778,
       disableFlip: true,
       experimentalFeatures: {
-        useBarCodeDetectorIfSupported: false
+        useBarCodeDetectorIfSupported: true
       },
       formatsToSupport: [
         Html5QrcodeSupportedFormats.CODE_128,
         Html5QrcodeSupportedFormats.CODE_39
-      ]
+      ],
+      videoConstraints: {
+        facingMode: "environment"
+      }
     };
+
+    async function testarPermissaoCamera() {
+      if (!window.isSecureContext) {
+        throw new Error("Página sem contexto seguro (HTTPS).");
+      }
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("getUserMedia não disponível neste ambiente.");
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: "environment" }
+        },
+        audio: false
+      });
+
+      stream.getTracks().forEach(track => track.stop());
+      return true;
+    }
 
     async function iniciarScanner() {
       if (cameraIniciada || scannerIniciando) return;
 
       scannerIniciando = true;
+      if (startBtn) startBtn.disabled = true;
+      setStatus("Solicitando permissão da câmera...");
 
       try {
+        await unlockAudio();
+
+        await testarPermissaoCamera();
+        setStatus("Permissão concedida. Abrindo câmera...");
+
         if (typeof Html5Qrcode === "undefined") {
-          console.error("Biblioteca Html5Qrcode não carregou.");
-          return;
+          throw new Error("Biblioteca Html5Qrcode não carregou.");
         }
 
         if (!html5QrCode) {
-          html5QrCode = new Html5Qrcode(readerElementId);
+          html5QrCode = new Html5Qrcode(readerElementId, {
+            verbose: false
+          });
         }
 
-        console.log("Tentando iniciar scanner rapidamente...");
+        await new Promise(resolve => setTimeout(resolve, 250));
 
         try {
           await html5QrCode.start(
-            { facingMode: "environment" },
+            { facingMode: { exact: "environment" } },
             config,
             onScanSuccess,
             onScanFailure
           );
+        } catch (erro1) {
+          console.warn("Falha com exact environment:", erro1);
 
-          cameraIniciada = true;
-          console.log("Scanner iniciado com facingMode.");
-        } catch (erroFacingMode) {
-          console.warn("Falha com facingMode, tentando lista de câmeras...", erroFacingMode);
+          try {
+            await html5QrCode.start(
+              { facingMode: "environment" },
+              config,
+              onScanSuccess,
+              onScanFailure
+            );
+          } catch (erro2) {
+            console.warn("Falha com facingMode environment:", erro2);
 
-          const cameras = await Html5Qrcode.getCameras();
-          console.log("Câmeras encontradas:", cameras);
+            const cameras = await Html5Qrcode.getCameras();
+            if (!cameras || cameras.length === 0) {
+              throw new Error("Nenhuma câmera encontrada.");
+            }
 
-          if (!cameras || cameras.length === 0) {
-            console.error("Nenhuma câmera encontrada.");
-            return;
+            const cameraPreferida =
+              cameras.find(c => /back|rear|environment|traseira/i.test(c.label || "")) ||
+              cameras[0];
+
+            await html5QrCode.start(
+              cameraPreferida.id,
+              config,
+              onScanSuccess,
+              onScanFailure
+            );
           }
-
-          const cameraPreferida =
-            cameras.find(c => /back|rear|environment|traseira/i.test(c.label)) ||
-            cameras[0];
-
-          await html5QrCode.start(
-            cameraPreferida.id,
-            config,
-            onScanSuccess,
-            onScanFailure
-          );
-
-          cameraIniciada = true;
-          console.log("Scanner iniciado com cameraId.");
         }
+
+        cameraIniciada = true;
+        setStatus("Câmera ativa.");
+        if (startBtn) startBtn.style.display = "none";
 
         setTimeout(() => {
           try {
             const capabilities = html5QrCode.getRunningTrackCapabilities?.();
-            const settings = html5QrCode.getRunningTrackSettings?.();
-
             if (capabilities && html5QrCode.applyVideoConstraints) {
               const advanced = [];
 
@@ -740,32 +695,34 @@
                 }
               }
 
-              if (
-                capabilities.zoom &&
-                typeof capabilities.zoom.max === "number" &&
-                capabilities.zoom.max >= 1.5
-              ) {
-                const zoomDesejado = Math.min(1.5, capabilities.zoom.max);
-                const zoomAtual = settings && settings.zoom ? settings.zoom : 1;
-
-                if (zoomDesejado > zoomAtual) {
-                  advanced.push({ zoom: zoomDesejado });
-                }
-              }
-
               if (advanced.length > 0) {
                 html5QrCode.applyVideoConstraints({ advanced }).catch(err => {
-                  console.warn("Falha ao aplicar constraints:", err);
+                  console.warn("Falha ao aplicar foco contínuo:", err);
                 });
               }
             }
           } catch (e) {
-            console.warn("Falha ao ajustar foco/zoom:", e);
+            console.warn("Falha ao ajustar foco:", e);
           }
         }, 300);
-
       } catch (e) {
         console.error("Erro ao iniciar scanner:", e);
+
+        const msg = String(e && e.message ? e.message : e);
+
+        if (msg.includes("Permission")) {
+          setStatus("Permissão da câmera negada.");
+        } else if (msg.includes("secure")) {
+          setStatus("A página precisa estar em HTTPS.");
+        } else if (msg.includes("getUserMedia")) {
+          setStatus("Este WebView/navegador não liberou a câmera.");
+        } else if (msg.includes("NotReadableError")) {
+          setStatus("A câmera está ocupada por outro app.");
+        } else {
+          setStatus("Não foi possível abrir a câmera.");
+        }
+
+        if (startBtn) startBtn.disabled = false;
       } finally {
         scannerIniciando = false;
       }
@@ -778,9 +735,12 @@
       document.addEventListener("pointerdown", tentar, { once: true, passive: true });
     }
 
+    if (startBtn) startBtn.addEventListener("click", iniciarScanner);
+    if (cancelBtn) cancelBtn.addEventListener("click", cancelarLeitura);
+
     window.addEventListener("load", () => {
       prepararAudioSemBloquearCamera();
-      iniciarScanner();
+      setStatus("Toque em 'Iniciar câmera'.");
     });
   </script>
 </body>
