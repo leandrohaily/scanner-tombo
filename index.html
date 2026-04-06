@@ -92,12 +92,32 @@
         0 10px 30px rgba(0,0,0,0.32);
     }
 
-    #reader {
+    .preview-wrap {
+      position: relative;
       width: 100%;
       min-height: 320px;
       background: #000;
+      overflow: hidden;
+      border-radius: 22px;
+    }
+
+    #cameraPreview {
+      width: 100%;
+      height: 320px;
+      object-fit: cover;
+      display: none;
+      background: #000;
+      border-radius: 22px;
+    }
+
+    #reader {
+      width: 100%;
+      min-height: 320px;
+      background: transparent;
       border: none !important;
-      position: relative;
+      position: absolute;
+      inset: 0;
+      z-index: 2;
       overflow: hidden;
     }
 
@@ -108,6 +128,7 @@
     #reader canvas {
       border: none !important;
       box-shadow: none !important;
+      background: transparent !important;
     }
 
     #reader__dashboard,
@@ -121,9 +142,7 @@
       height: 320px !important;
       object-fit: cover !important;
       border-radius: 22px;
-      background: #000;
-      transform: translateZ(0);
-      -webkit-transform: translateZ(0);
+      background: transparent !important;
     }
 
     #reader__scan_region {
@@ -258,13 +277,15 @@
       100% { content: ""; }
     }
 
-    .start-wrap, .cancel-wrap {
+    .start-wrap,
+    .cancel-wrap {
       margin-top: 16px;
       display: flex;
       justify-content: center;
     }
 
-    .start-btn, .cancel-btn {
+    .start-btn,
+    .cancel-btn {
       min-width: 180px;
       height: 48px;
       border: none;
@@ -282,7 +303,12 @@
 
     .start-btn { background: linear-gradient(180deg, #1565c0 0%, #0d47a1 100%); }
     .cancel-btn { background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%); }
-    .start-btn:active, .cancel-btn:active { transform: scale(0.97); filter: brightness(1.06); }
+
+    .start-btn:active,
+    .cancel-btn:active {
+      transform: scale(0.97);
+      filter: brightness(1.06);
+    }
 
     #successOverlay {
       position: fixed;
@@ -320,6 +346,7 @@
       color: rgba(255,255,255,0.82);
       min-height: 18px;
       line-height: 1.4;
+      white-space: pre-line;
     }
 
     @keyframes popIn {
@@ -328,14 +355,20 @@
     }
 
     @media (max-width: 420px) {
-      .scanner-shell, #reader, #reader video {
+      .scanner-shell,
+      .preview-wrap,
+      #cameraPreview,
+      #reader,
+      #reader video {
         min-height: 290px;
         height: 290px !important;
       }
+
       .scan-box {
         width: 86%;
         height: 120px;
       }
+
       .scan-hint {
         top: calc(50% + 82px);
       }
@@ -354,7 +387,10 @@
     </div>
 
     <div class="scanner-shell">
-      <div id="reader"></div>
+      <div class="preview-wrap">
+        <video id="cameraPreview" autoplay playsinline muted></video>
+        <div id="reader"></div>
+      </div>
 
       <div class="overlay">
         <div class="scan-box">
@@ -404,6 +440,7 @@
     const readerElementId = "reader";
 
     let html5QrCode = null;
+    let previewStream = null;
     let jaLeu = false;
     let cameraIniciada = false;
     let leituraEmAndamento = false;
@@ -415,6 +452,7 @@
     const startBtn = document.getElementById("startBtn");
     const cancelBtn = document.getElementById("cancelBtn");
     const statusMessage = document.getElementById("statusMessage");
+    const cameraPreview = document.getElementById("cameraPreview");
 
     function setStatus(msg) {
       if (statusMessage) statusMessage.textContent = msg || "";
@@ -534,15 +572,33 @@
       irParaScannerRetorno({ cancelado: "true" });
     }
 
+    async function pararPreview() {
+      try {
+        if (previewStream) {
+          previewStream.getTracks().forEach(track => track.stop());
+          previewStream = null;
+        }
+
+        if (cameraPreview) {
+          cameraPreview.pause();
+          cameraPreview.srcObject = null;
+          cameraPreview.style.display = "none";
+        }
+      } catch (e) {
+        console.warn("Erro ao parar preview:", e);
+      }
+    }
+
     async function cancelarLeitura() {
       try {
         if (cameraIniciada && html5QrCode) {
-          await html5QrCode.stop();
+          await html5QrCode.stop().catch(() => {});
           cameraIniciada = false;
         }
       } catch (e) {
         console.warn("Erro ao parar câmera:", e);
       } finally {
+        await pararPreview();
         voltarParaAppCancelado();
       }
     }
@@ -550,12 +606,14 @@
     async function encerrarScannerComRetorno(decodedText) {
       try {
         if (cameraIniciada && html5QrCode) {
-          await html5QrCode.stop();
+          await html5QrCode.stop().catch(() => {});
           cameraIniciada = false;
         }
       } catch (e) {
         console.warn("Erro ao encerrar scanner:", e);
       }
+
+      await pararPreview();
       returnToApp(decodedText);
     }
 
@@ -580,40 +638,90 @@
     }
 
     const config = {
-      fps: 15,
-      qrbox: { width: 320, height: 130 },
+      fps: 12,
+      qrbox: { width: 300, height: 120 },
       aspectRatio: 1.7778,
       disableFlip: true,
       experimentalFeatures: {
-        useBarCodeDetectorIfSupported: true
+        useBarCodeDetectorIfSupported: false
       },
       formatsToSupport: [
         Html5QrcodeSupportedFormats.CODE_128,
         Html5QrcodeSupportedFormats.CODE_39
-      ],
-      videoConstraints: {
-        facingMode: "environment"
-      }
+      ]
     };
 
-    async function testarPermissaoCamera() {
+    async function iniciarPreviewCamera() {
       if (!window.isSecureContext) {
-        throw new Error("Página sem contexto seguro (HTTPS).");
+        throw new Error("Página sem HTTPS.");
       }
 
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error("getUserMedia não disponível neste ambiente.");
+        throw new Error("getUserMedia indisponível.");
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia({
+      previewStream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: { ideal: "environment" }
+          facingMode: "environment",
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
         },
         audio: false
       });
 
-      stream.getTracks().forEach(track => track.stop());
+      if (!cameraPreview) {
+        throw new Error("Elemento de preview não encontrado.");
+      }
+
+      cameraPreview.srcObject = previewStream;
+      cameraPreview.style.display = "block";
+
+      try {
+        await cameraPreview.play();
+      } catch (e) {
+        console.warn("Falha no play do preview:", e);
+      }
+
       return true;
+    }
+
+    async function iniciarScannerHtml5Qrcode() {
+      if (typeof Html5Qrcode === "undefined") {
+        throw new Error("Biblioteca Html5Qrcode não carregou.");
+      }
+
+      if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode(readerElementId, { verbose: false });
+      }
+
+      try {
+        await html5QrCode.start(
+          { facingMode: "environment" },
+          config,
+          onScanSuccess,
+          onScanFailure
+        );
+        return true;
+      } catch (erro1) {
+        console.warn("Falha com facingMode:", erro1);
+
+        const cameras = await Html5Qrcode.getCameras();
+        if (!cameras || cameras.length === 0) {
+          throw new Error("Nenhuma câmera encontrada para o scanner.");
+        }
+
+        const cameraPreferida =
+          cameras.find(c => /back|rear|environment|traseira/i.test(c.label || "")) ||
+          cameras[0];
+
+        await html5QrCode.start(
+          cameraPreferida.id,
+          config,
+          onScanSuccess,
+          onScanFailure
+        );
+        return true;
+      }
     }
 
     async function iniciarScanner() {
@@ -621,101 +729,46 @@
 
       scannerIniciando = true;
       if (startBtn) startBtn.disabled = true;
-      setStatus("Solicitando permissão da câmera...");
 
       try {
         await unlockAudio();
 
-        await testarPermissaoCamera();
-        setStatus("Permissão concedida. Abrindo câmera...");
-
-        if (typeof Html5Qrcode === "undefined") {
-          throw new Error("Biblioteca Html5Qrcode não carregou.");
-        }
-
-        if (!html5QrCode) {
-          html5QrCode = new Html5Qrcode(readerElementId, {
-            verbose: false
-          });
-        }
-
-        await new Promise(resolve => setTimeout(resolve, 250));
+        setStatus("Solicitando câmera...");
+        await iniciarPreviewCamera();
+        setStatus("Preview da câmera ativo.");
 
         try {
-          await html5QrCode.start(
-            { facingMode: { exact: "environment" } },
-            config,
-            onScanSuccess,
-            onScanFailure
+          await new Promise(resolve => setTimeout(resolve, 350));
+          setStatus("Iniciando leitura do código...");
+          await iniciarScannerHtml5Qrcode();
+
+          cameraIniciada = true;
+          setStatus("Câmera ativa. Aponte para o código.");
+          if (startBtn) startBtn.style.display = "none";
+        } catch (scanError) {
+          console.warn("Falha no html5-qrcode após preview:", scanError);
+
+          setStatus(
+            "A câmera abriu, mas o leitor não iniciou.\n" +
+            "Isso indica limitação do WebView para leitura automática."
           );
-        } catch (erro1) {
-          console.warn("Falha com exact environment:", erro1);
 
-          try {
-            await html5QrCode.start(
-              { facingMode: "environment" },
-              config,
-              onScanSuccess,
-              onScanFailure
-            );
-          } catch (erro2) {
-            console.warn("Falha com facingMode environment:", erro2);
-
-            const cameras = await Html5Qrcode.getCameras();
-            if (!cameras || cameras.length === 0) {
-              throw new Error("Nenhuma câmera encontrada.");
-            }
-
-            const cameraPreferida =
-              cameras.find(c => /back|rear|environment|traseira/i.test(c.label || "")) ||
-              cameras[0];
-
-            await html5QrCode.start(
-              cameraPreferida.id,
-              config,
-              onScanSuccess,
-              onScanFailure
-            );
+          if (startBtn) {
+            startBtn.disabled = false;
+            startBtn.textContent = "📷 Tentar leitura novamente";
           }
         }
-
-        cameraIniciada = true;
-        setStatus("Câmera ativa.");
-        if (startBtn) startBtn.style.display = "none";
-
-        setTimeout(() => {
-          try {
-            const capabilities = html5QrCode.getRunningTrackCapabilities?.();
-            if (capabilities && html5QrCode.applyVideoConstraints) {
-              const advanced = [];
-
-              if (capabilities.focusMode && Array.isArray(capabilities.focusMode)) {
-                if (capabilities.focusMode.includes("continuous")) {
-                  advanced.push({ focusMode: "continuous" });
-                }
-              }
-
-              if (advanced.length > 0) {
-                html5QrCode.applyVideoConstraints({ advanced }).catch(err => {
-                  console.warn("Falha ao aplicar foco contínuo:", err);
-                });
-              }
-            }
-          } catch (e) {
-            console.warn("Falha ao ajustar foco:", e);
-          }
-        }, 300);
       } catch (e) {
-        console.error("Erro ao iniciar scanner:", e);
+        console.error("Erro ao iniciar câmera:", e);
 
         const msg = String(e && e.message ? e.message : e);
 
-        if (msg.includes("Permission")) {
+        if (msg.includes("Permission") || msg.includes("denied")) {
           setStatus("Permissão da câmera negada.");
-        } else if (msg.includes("secure")) {
+        } else if (msg.includes("HTTPS")) {
           setStatus("A página precisa estar em HTTPS.");
         } else if (msg.includes("getUserMedia")) {
-          setStatus("Este WebView/navegador não liberou a câmera.");
+          setStatus("Este WebView não liberou a câmera.");
         } else if (msg.includes("NotReadableError")) {
           setStatus("A câmera está ocupada por outro app.");
         } else {
