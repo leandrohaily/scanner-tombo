@@ -480,6 +480,7 @@
     let jaLeu = false;
     let cameraIniciada = false;
     let leituraEmAndamento = false;
+    let scannerIniciando = false;
 
     let audioUnlocked = false;
     let audioContext = null;
@@ -658,90 +659,114 @@
     const qrboxHeight = 110;
 
     const config = {
-      fps: 12,
+      fps: 10,
       qrbox: { width: qrboxWidth, height: qrboxHeight },
       aspectRatio: 1.7778,
-      disableFlip: false,
+      disableFlip: true,
       experimentalFeatures: {
         useBarCodeDetectorIfSupported: false
       },
       formatsToSupport: [
         Html5QrcodeSupportedFormats.CODE_128,
-        Html5QrcodeSupportedFormats.CODE_39,
-        Html5QrcodeSupportedFormats.EAN_13,
-        Html5QrcodeSupportedFormats.EAN_8,
-        Html5QrcodeSupportedFormats.ITF,
-        Html5QrcodeSupportedFormats.CODABAR
+        Html5QrcodeSupportedFormats.CODE_39
       ]
     };
 
     async function iniciarScanner() {
+      if (cameraIniciada || scannerIniciando) return;
+
+      scannerIniciando = true;
+
       try {
         if (typeof Html5Qrcode === "undefined") {
           console.error("Biblioteca Html5Qrcode não carregou.");
           return;
         }
 
-        html5QrCode = new Html5Qrcode(readerElementId);
-
-        const cameras = await Html5Qrcode.getCameras();
-        console.log("Câmeras encontradas:", cameras);
-
-        if (!cameras || cameras.length === 0) {
-          console.error("Nenhuma câmera encontrada.");
-          return;
+        if (!html5QrCode) {
+          html5QrCode = new Html5Qrcode(readerElementId);
         }
 
-        const cameraPreferida =
-          cameras.find(c => /back|rear|environment|traseira/i.test(c.label)) ||
-          cameras[0];
-
-        await html5QrCode.start(
-          cameraPreferida.id,
-          config,
-          onScanSuccess,
-          onScanFailure
-        );
-
-        cameraIniciada = true;
-        console.log("Scanner iniciado com sucesso.");
+        console.log("Tentando iniciar scanner rapidamente...");
 
         try {
-          const capabilities = html5QrCode.getRunningTrackCapabilities?.();
-          const settings = html5QrCode.getRunningTrackSettings?.();
+          await html5QrCode.start(
+            { facingMode: "environment" },
+            config,
+            onScanSuccess,
+            onScanFailure
+          );
 
-          if (capabilities && html5QrCode.applyVideoConstraints) {
-            const advanced = [];
+          cameraIniciada = true;
+          console.log("Scanner iniciado com facingMode.");
+        } catch (erroFacingMode) {
+          console.warn("Falha com facingMode, tentando lista de câmeras...", erroFacingMode);
 
-            if (capabilities.focusMode && Array.isArray(capabilities.focusMode)) {
-              if (capabilities.focusMode.includes("continuous")) {
-                advanced.push({ focusMode: "continuous" });
-              }
-            }
+          const cameras = await Html5Qrcode.getCameras();
+          console.log("Câmeras encontradas:", cameras);
 
-            if (
-              capabilities.zoom &&
-              typeof capabilities.zoom.max === "number" &&
-              capabilities.zoom.max >= 1.5
-            ) {
-              const zoomDesejado = Math.min(1.5, capabilities.zoom.max);
-              const zoomAtual = settings && settings.zoom ? settings.zoom : 1;
-              if (zoomDesejado > zoomAtual) {
-                advanced.push({ zoom: zoomDesejado });
-              }
-            }
-
-            if (advanced.length > 0) {
-              html5QrCode.applyVideoConstraints({ advanced }).catch(err => {
-                console.warn("Falha ao aplicar constraints:", err);
-              });
-            }
+          if (!cameras || cameras.length === 0) {
+            console.error("Nenhuma câmera encontrada.");
+            return;
           }
-        } catch (e) {
-          console.warn("Falha ao ajustar foco/zoom:", e);
+
+          const cameraPreferida =
+            cameras.find(c => /back|rear|environment|traseira/i.test(c.label)) ||
+            cameras[0];
+
+          await html5QrCode.start(
+            cameraPreferida.id,
+            config,
+            onScanSuccess,
+            onScanFailure
+          );
+
+          cameraIniciada = true;
+          console.log("Scanner iniciado com cameraId.");
         }
+
+        setTimeout(() => {
+          try {
+            const capabilities = html5QrCode.getRunningTrackCapabilities?.();
+            const settings = html5QrCode.getRunningTrackSettings?.();
+
+            if (capabilities && html5QrCode.applyVideoConstraints) {
+              const advanced = [];
+
+              if (capabilities.focusMode && Array.isArray(capabilities.focusMode)) {
+                if (capabilities.focusMode.includes("continuous")) {
+                  advanced.push({ focusMode: "continuous" });
+                }
+              }
+
+              if (
+                capabilities.zoom &&
+                typeof capabilities.zoom.max === "number" &&
+                capabilities.zoom.max >= 1.5
+              ) {
+                const zoomDesejado = Math.min(1.5, capabilities.zoom.max);
+                const zoomAtual = settings && settings.zoom ? settings.zoom : 1;
+
+                if (zoomDesejado > zoomAtual) {
+                  advanced.push({ zoom: zoomDesejado });
+                }
+              }
+
+              if (advanced.length > 0) {
+                html5QrCode.applyVideoConstraints({ advanced }).catch(err => {
+                  console.warn("Falha ao aplicar constraints:", err);
+                });
+              }
+            }
+          } catch (e) {
+            console.warn("Falha ao ajustar foco/zoom:", e);
+          }
+        }, 300);
+
       } catch (e) {
         console.error("Erro ao iniciar scanner:", e);
+      } finally {
+        scannerIniciando = false;
       }
     }
 
