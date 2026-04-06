@@ -473,7 +473,7 @@
   </div>
 
   <script>
-    const appReturnUrl = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
+    const fallbackReturnUrl = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
     const readerElementId = "reader";
     let html5QrCode = null;
 
@@ -504,6 +504,60 @@
         }
       }
       return audioContext;
+    }
+
+    function getReturnUrl() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const urlParam = params.get("returnUrl");
+
+        if (urlParam && urlParam.trim() !== "") {
+          return decodeURIComponent(urlParam);
+        }
+
+        if (document.referrer && document.referrer.trim() !== "") {
+          return document.referrer;
+        }
+      } catch (e) {
+        console.warn("Falha ao obter returnUrl:", e);
+      }
+
+      return fallbackReturnUrl;
+    }
+
+    function navegarDeVolta(tombo = null) {
+      const baseUrl = getReturnUrl();
+
+      try {
+        const url = new URL(baseUrl, window.location.origin);
+
+        if (tombo) {
+          url.searchParams.set("tombo", onlyDigits(tombo));
+        }
+
+        const mesmaOrigem = (() => {
+          try {
+            return document.referrer && new URL(document.referrer).origin === window.location.origin;
+          } catch {
+            return false;
+          }
+        })();
+
+        if (!tombo && window.history.length > 1 && mesmaOrigem) {
+          window.history.back();
+          return;
+        }
+
+        window.location.replace(url.toString());
+      } catch (e) {
+        console.warn("Falha ao navegar com URL dinâmica:", e);
+
+        const finalUrl = tombo
+          ? `${fallbackReturnUrl}?tombo=${encodeURIComponent(onlyDigits(tombo))}`
+          : fallbackReturnUrl;
+
+        window.location.replace(finalUrl);
+      }
     }
 
     async function unlockAudio() {
@@ -603,11 +657,11 @@
         return;
       }
 
-      window.location.href = `${appReturnUrl}?tombo=${encodeURIComponent(tombo)}`;
+      navegarDeVolta(tombo);
     }
 
     function voltarParaApp() {
-      window.location.href = appReturnUrl;
+      navegarDeVolta();
     }
 
     async function cancelarLeitura() {
