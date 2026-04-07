@@ -4,93 +4,91 @@
   <meta charset="UTF-8" />
   <title>Invent JUS</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
-    /* Estilos preservados para manter o visual */
+    /* Estilos Simplificados para Performance */
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { margin: 0; padding: 0; min-height: 100%; font-family: Arial, sans-serif; color: #fff; 
-      background: radial-gradient(circle at top, rgba(64, 110, 255, 0.20), transparent 34%), 
-      linear-gradient(180deg, #030d20 0%, #071a3b 45%, #041127 100%); overflow: hidden; }
+    html, body { margin: 0; padding: 0; height: 100%; font-family: Arial, sans-serif; color: #fff; 
+      background: #041127; overflow: hidden; }
     body { display: flex; align-items: center; justify-content: center; padding: 14px; }
-    .app { width: 100%; max-width: 430px; border-radius: 26px; padding: 18px 16px; 
-      background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.10); 
-      backdrop-filter: blur(12px); position: relative; }
-    .logo-wrap { display: flex; justify-content: center; margin-bottom: 10px; }
-    .logo-wrap img { max-width: 200px; height: auto; }
-    .title { text-align: center; font-size: 17px; font-weight: 700; margin-bottom: 6px; }
-    .subtitle { text-align: center; font-size: 13px; color: rgba(255,255,255,0.8); margin-bottom: 16px; }
-    .scanner-shell { position: relative; border-radius: 22px; background: #000; min-height: 310px; overflow: hidden; }
+    .app { width: 100%; max-width: 430px; border-radius: 26px; padding: 18px; 
+      background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); 
+      backdrop-filter: blur(12px); text-align: center; }
+    .scanner-shell { position: relative; border-radius: 22px; background: #000; min-height: 310px; overflow: hidden; margin: 15px 0; }
     #reader { width: 100%; min-height: 310px; }
-    .scan-box { position: absolute; left: 50%; top: 50%; width: 78%; height: 120px; 
-      transform: translate(-50%, -50%); border: 2px solid #fff; border-radius: 12px; 
-      box-shadow: 0 0 0 9999px rgba(0,0,0,0.5); z-index: 10; }
-    .laser-line { position: absolute; left: 5%; right: 5%; height: 2px; background: #ff4747; 
-      box-shadow: 0 0 8px #ff4747; animation: laser 2s infinite; z-index: 11; }
-    @keyframes laser { 0%, 100% { top: 10%; } 50% { top: 90%; } }
-    .cancel-wrap { margin-top: 20px; display: flex; justify-content: center; }
-    .cancel-btn { width: 180px; height: 45px; border-radius: 12px; border: none; background: #d62828; color: #fff; font-weight: bold; }
+    .scan-box { position: absolute; inset: 0; border: 2px solid #fff; border-radius: 12px; 
+      margin: 90px 40px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.5); z-index: 10; pointer-events: none; }
+    .cancel-btn { width: 100%; height: 50px; border-radius: 12px; border: none; background: #d62828; color: #fff; font-weight: bold; font-size: 16px; }
     #successOverlay { position: fixed; inset: 0; background: #00a859; display: none; align-items: center; justify-content: center; z-index: 9999; }
   </style>
 </head>
 <body>
   <div class="app">
-    <div class="logo-wrap"><img src="logo-inventjus.png" alt="Invent JUS"></div>
-    <div class="title">Leitor de código de barras</div>
-    <div class="subtitle">Centralize a etiqueta patrimonial.</div>
+    <div class="title" style="font-weight: bold;">Leitor Invent JUS</div>
     <div class="scanner-shell">
       <div id="reader"></div>
-      <div class="scan-box"><div class="laser-line"></div></div>
+      <div class="scan-box"></div>
     </div>
-    <div class="cancel-wrap"><button class="cancel-btn" onclick="finalizarEIr('')">✕ Cancelar</button></div>
+    <button class="cancel-btn" onclick="voltar(true)">✕ Cancelar</button>
   </div>
 
   <div id="successOverlay">
     <div style="text-align: center; color: white;">
       <div style="font-size: 50px;">✔</div>
-      <div style="font-size: 20px;">Tombo Lido!</div>
+      <div style="font-size: 20px;">Código Lido!</div>
     </div>
   </div>
 
   <script>
     const appReturnUrl = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
     let html5QrCode = null;
-    let executado = false;
+    let finalizando = false;
 
-    async function finalizarEIr(tombo = "") {
-      if (executado) return;
-      executado = true;
+    async function voltar(isCancel = false, tombo = "") {
+      if (finalizando) return;
+      finalizando = true;
 
-      // Parar câmera imediatamente
+      // 1. Para a câmera
       if (html5QrCode) {
         try { await html5QrCode.stop(); } catch (e) {}
       }
 
+      // 2. Salva no LocalStorage (Garante que o dado não se perca no iOS)
+      if (!isCancel && tombo) {
+        localStorage.setItem('tombo_lido', tombo);
+        localStorage.setItem('scanner_status', 'success');
+      }
+
+      // 3. Monta a URL de retorno com o parâmetro
       const url = new URL(appReturnUrl);
       if (tombo) url.searchParams.set("tombo", tombo);
       url.searchParams.set("scanner_return", "1");
+      
+      // Adiciona um timestamp para forçar o FlutterFlow a recarregar a página
+      url.searchParams.set("t", Date.now());
+
       const finalUrl = url.toString();
 
-      // --- ESTRATÉGIA ANTI-ABA SAFARI ---
-      // 1. Tenta fechar a janela (se foi aberta como popup)
-      window.close();
-
-      // 2. Tenta o replace para não criar histórico
+      // 4. Redirecionamento forçado na mesma aba
       window.location.replace(finalUrl);
-
-      // 3. Se ainda assim o Safari forçar, o 'window.top' garante que ele use a aba principal
+      
+      // Fallback para Safari persistente
       setTimeout(() => {
-        if (window.top) window.top.location.href = finalUrl;
-      }, 50);
+        window.top.location.href = finalUrl;
+      }, 100);
     }
 
     function onScanSuccess(decodedText) {
       const tombo = decodedText.replace(/\D/g, "");
-      if (tombo && !executado) {
+      if (tombo && !finalizando) {
         document.getElementById("successOverlay").style.display = "flex";
-        finalizarEIr(tombo);
+        
+        // Vibrate para feedback no iPhone
+        if (navigator.vibrate) navigator.vibrate(200);
+        
+        voltar(false, tombo);
       }
     }
 
@@ -98,11 +96,10 @@
       html5QrCode = new Html5Qrcode("reader");
       html5QrCode.start(
         { facingMode: "environment" },
-        { fps: 15, qrbox: { width: 250, height: 100 } },
+        { fps: 20, qrbox: { width: 250, height: 120 } },
         onScanSuccess
-      ).catch(() => {
-        // Fallback para câmeras frontais/outras
-        html5QrCode.start({ facingMode: "user" }, { fps: 15, qrbox: 250 }, onScanSuccess);
+      ).catch(err => {
+        console.error("Erro ao iniciar camera", err);
       });
     });
   </script>
