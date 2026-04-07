@@ -31,7 +31,6 @@
     .logo-wrap { display: flex; justify-content: center; align-items: center; margin-bottom: 10px; }
     .logo-wrap img { max-width: 210px; width: 100%; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.28)); }
 
-    /* TEXTOS RECUPERADOS */
     .title { text-align: center; font-size: 17px; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.2px; }
     .subtitle { text-align: center; font-size: 13px; color: rgba(255,255,255,0.82); line-height: 1.45; margin-bottom: 16px; }
 
@@ -56,12 +55,19 @@
       box-shadow: none !important; 
     }
 
+    /* ALTERAÇÃO: Laser inicia escondido (opacity: 0) */
     .laser-line {
       position: absolute; left: 5%; right: 5%; height: 3px;
       background: #ff4747; box-shadow: 0 0 12px #ff4747;
       animation: laserMove 2.2s ease-in-out infinite;
       z-index: 22;
+      opacity: 0; 
+      transition: opacity 0.5s;
     }
+    
+    /* Classe que o JavaScript vai adicionar para mostrar o laser */
+    .laser-active { opacity: 1 !important; }
+
     @keyframes laserMove { 0%, 100% { top: 12%; } 50% { top: 88%; } }
 
     .scan-hint {
@@ -75,6 +81,8 @@
       color: rgba(255,255,255,0.9);
       text-shadow: 0 1px 4px rgba(0,0,0,0.8);
       z-index: 23;
+      opacity: 0;
+      transition: opacity 0.5s;
     }
 
     .reading-status { margin-top: 14px; text-align: center; font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.92); }
@@ -105,9 +113,9 @@
       <div id="reader"></div>
       <div class="overlay">
         <div class="scan-box">
-          <div class="laser-line"></div>
+          <div class="laser-line" id="laser"></div>
         </div>
-        <div class="scan-hint">Aproxime e mantenha o código alinhado na horizontal</div>
+        <div class="scan-hint" id="hint">Aproxime e mantenha o código alinhado na horizontal</div>
       </div>
     </div>
 
@@ -126,7 +134,6 @@
     let html5QrCode = null;
     let isReturning = false;
 
-    // Beep sintético (Web Audio API)
     function playSyntheticBeep() {
       try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -141,7 +148,7 @@
         gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.2);
         oscillator.start();
         oscillator.stop(audioCtx.currentTime + 0.2);
-      } catch (e) { console.warn("Áudio automático bloqueado."); }
+      } catch (e) { }
     }
 
     async function retornarAoApp(codigo = "") {
@@ -179,7 +186,10 @@
       html5QrCode.start({ facingMode: "environment" }, config, (text) => {
         retornarAoApp(text);
       }).then(() => {
+        // SUCESSO: A câmera abriu! Ativamos o laser e a dica visual agora
         document.getElementById('status-text').innerText = "Lendo...";
+        document.getElementById('laser').classList.add('laser-active');
+        document.getElementById('hint').classList.add('laser-active');
       }).catch(() => {
         document.getElementById('status-text').innerText = "Erro ao acessar câmera.";
       });
