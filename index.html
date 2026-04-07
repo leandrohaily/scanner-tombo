@@ -6,66 +6,143 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <script src="https://unpkg.com/html5-qrcode"></script>
+  
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { margin: 0; background: #000; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; color: white; overflow: hidden; }
-    .container { width: 90%; max-width: 400px; text-align: center; z-index: 5; }
-    #reader { width: 100%; border-radius: 24px; overflow: hidden; background: #000; border: 2px solid rgba(255,255,255,0.1); }
-    .btn-cancel { margin-top: 25px; width: 100%; padding: 16px; border: none; border-radius: 16px; background: #ff3b30; color: white; font-weight: bold; font-size: 16px; box-shadow: 0 4px 15px rgba(255,59,48,0.3); }
-    #success { position: fixed; inset: 0; background: #34c759; display: none; align-items: center; justify-content: center; z-index: 99; font-size: 28px; font-weight: bold; flex-direction: column; }
+    body { 
+      margin: 0; 
+      background: #000; 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      height: 100vh; 
+      color: white; 
+      overflow: hidden; 
+    }
+    .container { width: 90%; max-width: 400px; text-align: center; position: relative; }
+    
+    #reader { 
+      width: 100%; 
+      border-radius: 24px; 
+      overflow: hidden; 
+      background: #000; 
+      border: 1px solid rgba(255,255,255,0.2);
+      min-height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Estilização do vídeo injetado pela biblioteca */
+    #reader video {
+      object-fit: cover !important;
+    }
+
+    .btn-cancel { 
+      margin-top: 25px; 
+      width: 100%; 
+      padding: 16px; 
+      border: none; 
+      border-radius: 16px; 
+      background: #ff3b30; 
+      color: white; 
+      font-weight: bold; 
+      font-size: 16px; 
+      box-shadow: 0 4px 15px rgba(255,59,48,0.3); 
+      cursor: pointer;
+    }
+
+    .btn-permission {
+      background: #34c759;
+      color: white;
+      padding: 20px;
+      border: none;
+      border-radius: 12px;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #success-screen { 
+      position: fixed; 
+      inset: 0; 
+      background: #34c759; 
+      display: none; 
+      flex-direction: column;
+      align-items: center; 
+      justify-content: center; 
+      z-index: 99; 
+    }
+    
+    .check-icon { font-size: 80px; margin-bottom: 10px; }
   </style>
 </head>
 <body>
+
   <div class="container">
-    <div style="margin-bottom: 20px; font-weight: bold; opacity: 0.8;">SCANNER PATRIMONIAL</div>
-    <div id="reader"></div>
+    <div style="margin-bottom: 20px; font-weight: 600; letter-spacing: 1px; opacity: 0.9;">INVENT JUS - SCANNER</div>
+    
+    <div id="reader">
+        <button id="start-btn" class="btn-permission" onclick="iniciarScanner()">ATIVAR CÂMERA</button>
+    </div>
+
     <button class="btn-cancel" onclick="retornarAoApp('')">✕ CANCELAR</button>
   </div>
   
-  <div id="success">
-    <span>✔</span>
-    <div style="font-size: 18px; margin-top: 10px;">TOMBO LIDO</div>
+  <div id="success-screen">
+    <div class="check-icon">✔</div>
+    <div style="font-size: 20px; font-weight: bold;">CÓDIGO LIDO</div>
+    <div style="font-size: 14px; opacity: 0.8; margin-top: 5px;">Retornando ao inventário...</div>
   </div>
 
   <script>
     const APP_URL = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
     let html5QrCode = null;
-    let finalizado = false;
+    let processando = false;
+
+    // Função para extrair apenas números (Tombo)
+    function extrairTombo(texto) {
+      return texto.replace(/\D/g, "");
+    }
 
     async function retornarAoApp(codigo) {
-      if (finalizado) return;
-      finalizado = true;
+      if (processando) return;
+      processando = true;
 
-      // 1. Para o scanner imediatamente para liberar a CPU do iPhone
-      if (html5QrCode) {
-        try { await html5QrCode.stop(); } catch (e) { console.log(e); }
+      // Para a câmera para evitar que o Safari trave o hardware
+      if (html5QrCode && html5QrCode.isScanning) {
+        try { await html5QrCode.stop(); } catch (e) { console.warn(e); }
       }
 
-      // 2. Prepara a URL com cache-buster (t=timestamp)
       const url = new URL(APP_URL);
       if (codigo) url.searchParams.set("tombo", codigo);
       url.searchParams.set("scanner_return", "1");
-      url.searchParams.set("t", Date.now());
+      url.searchParams.set("t", Date.now()); // Evita cache do Safari
 
-      if (codigo) document.getElementById("success").style.display = "flex";
+      if (codigo) {
+        document.getElementById("success-screen").style.display = "flex";
+      }
 
-      // 3. O PULO DO GATO PARA O SAFARI:
-      // Usamos replace no nível mais alto (top) para garantir que a aba atual seja sobrescrita
-      // Isso evita que o Safari empilhe abas no modo "App de Tela de Início"
+      // O SEGREDO: window.top.location.replace garante que a aba atual seja substituída
       setTimeout(() => {
         window.top.location.replace(url.toString());
-      }, codigo ? 500 : 0);
+      }, codigo ? 600 : 0);
     }
 
     function onScanSuccess(decodedText) {
-      const tombo = decodedText.replace(/\D/g, "");
-      if (tombo && !finalizado) {
+      const tombo = extrairTombo(decodedText);
+      if (tombo && !processando) {
         if (navigator.vibrate) navigator.vibrate(200);
         retornarAoApp(tombo);
       }
     }
 
-    window.onload = () => {
+    async function iniciarScanner() {
+      // Remove o botão de ativação se ele existir
+      const btn = document.getElementById("start-btn");
+      if(btn) btn.style.display = "none";
+
       html5QrCode = new Html5Qrcode("reader");
       const config = { 
         fps: 20, 
@@ -73,12 +150,23 @@
         aspectRatio: 1.777
       };
       
-      html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
-        .catch(() => {
-          // Fallback caso falhe a câmera traseira
-          html5QrCode.start({ facingMode: "user" }, config, onScanSuccess);
-        });
-    };
+      try {
+        await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess);
+      } catch (err) {
+        console.error("Erro ao iniciar câmera:", err);
+        // Se falhar (ex: permissão negada), restaura o botão para o usuário tentar de novo
+        if(btn) btn.style.display = "block";
+        alert("Por favor, permita o acesso à câmera nas configurações do Safari.");
+      }
+    }
+
+    // Tenta iniciar automaticamente ao carregar
+    window.addEventListener("load", () => {
+      // Pequeno delay para o Safari estabilizar o DOM
+      setTimeout(() => {
+        iniciarScanner();
+      }, 300);
+    });
   </script>
 </body>
 </html>
