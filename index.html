@@ -481,7 +481,12 @@
   </div>
 
   <script>
-    const appReturnUrl = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
+  function getReturnUrl() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("returnUrl") || "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
+  }
+
+const appReturnUrl = getReturnUrl();
     const readerElementId = "reader";
 
     let html5QrCode = null;
