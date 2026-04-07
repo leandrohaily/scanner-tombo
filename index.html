@@ -4,44 +4,54 @@
   <meta charset="UTF-8" />
   <title>Invent JUS</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Invent JUS">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    
     html, body {
       margin: 0; padding: 0; min-height: 100%;
       font-family: Arial, sans-serif; color: #fff;
       background: radial-gradient(circle at top, rgba(64, 110, 255, 0.20), transparent 34%),
                   linear-gradient(180deg, #030d20 0%, #071a3b 45%, #041127 100%);
     }
+
     body { display: flex; align-items: center; justify-content: center; padding: 14px; }
+
     .app {
       width: 100%; max-width: 430px; border-radius: 26px; padding: 18px 16px;
-      background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.10);
-      backdrop-filter: blur(12px); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.38); position: relative;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255,255,255,0.05);
+      position: relative;
     }
-    .logo-wrap { display: flex; justify-content: center; margin-bottom: 10px; }
-    .logo-wrap img { max-width: 210px; height: auto; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.28)); }
+
+    .logo-wrap { display: flex; justify-content: center; align-items: center; margin-bottom: 10px; }
+    .logo-wrap img { max-width: 210px; width: 100%; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.28)); }
+
+    .title { text-align: center; font-size: 17px; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.2px; }
+    .subtitle { text-align: center; font-size: 13px; color: rgba(255,255,255,0.82); line-height: 1.45; margin-bottom: 16px; }
 
     .scanner-shell {
       position: relative; overflow: hidden; border-radius: 22px;
-      background: #000; min-height: 320px;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+      background: #000; min-height: 310px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 10px 30px rgba(0,0,0,0.32);
     }
-    #reader { width: 100%; min-height: 320px; background: #000; border: none !important; }
-    #reader video { object-fit: cover !important; border-radius: 22px; }
+
+    #reader { width: 100%; min-height: 310px; background: #000; border: none !important; }
+    #reader video { width: 100% !important; height: 310px !important; object-fit: cover !important; border-radius: 22px; }
 
     .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
-    
-    /* ÁREA DE LEITURA AMPLIADA */
+
     .scan-box {
       position: absolute; left: 50%; top: 50%;
-      width: 85%; max-width: 320px; 
-      height: 160px; /* Altura aumentada conforme solicitado */
+      width: 82%; height: 160px; /* Altura ampliada solicitada */
       transform: translate(-50%, -50%);
       border: 2px solid rgba(255,255,255,0.95); border-radius: 12px;
-      box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
+      box-shadow: 0 0 0 9999px rgba(0,0,0,0.42);
     }
 
     .corner { position: absolute; width: 24px; height: 24px; border: 4px solid #fff; }
@@ -53,19 +63,18 @@
     .laser-line {
       position: absolute; left: 5%; right: 5%; height: 3px;
       background: #ff4747; box-shadow: 0 0 12px #ff4747;
-      animation: laserMove 2s ease-in-out infinite;
+      animation: laserMove 2.2s ease-in-out infinite;
     }
-    @keyframes laserMove {
-      0%, 100% { top: 10%; }
-      50% { top: 90%; }
-    }
+    @keyframes laserMove { 0%, 100% { top: 12%; } 50% { top: 88%; } }
 
-    .reading-status { margin-top: 14px; text-align: center; font-size: 15px; font-weight: 600; }
+    .reading-status { margin-top: 14px; text-align: center; font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.92); }
+
     .cancel-btn {
       display: block; margin: 16px auto 0; min-width: 180px; height: 48px;
       border: none; border-radius: 14px; background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%);
-      color: #fff; font-weight: 700; cursor: pointer;
+      color: #fff; font-weight: 700; cursor: pointer; box-shadow: 0 8px 18px rgba(0,0,0,0.22);
     }
+
     #successOverlay {
       position: fixed; inset: 0; background: rgba(0, 168, 89, 0.96);
       display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999;
@@ -75,7 +84,13 @@
 <body>
 
   <div class="app">
-    <div class="logo-wrap"><img src="logo-inventjus.png" alt="Invent JUS"></div>
+    <div class="logo-wrap">
+      <img src="logo-inventjus.png" alt="Invent JUS">
+    </div>
+
+    <div class="title">Leitor de código de barras</div>
+    <div class="subtitle">Centralize a etiqueta patrimonial dentro da área de leitura.</div>
+
     <div class="scanner-shell">
       <div id="reader"></div>
       <div class="overlay">
@@ -86,13 +101,16 @@
         </div>
       </div>
     </div>
-    <div class="reading-status">Iniciando...</div>
+
+    <div class="reading-status" id="status-text">Iniciando...</div>
+
     <button class="cancel-btn" onclick="retornarAoApp('')">✕ Cancelar</button>
   </div>
 
   <div id="successOverlay">
     <div style="font-size:72px">✔</div>
     <div style="font-size:22px; font-weight:800">TOMBO LIDO</div>
+    <div style="font-size:14px; opacity:0.8">Retornando ao sistema...</div>
   </div>
 
   <script>
@@ -104,10 +122,6 @@
       if (isReturning) return;
       isReturning = true;
 
-      if (html5QrCode) {
-        html5QrCode.stop().catch(() => {});
-      }
-
       const url = new URL(APP_URL);
       if (codigo) {
         url.searchParams.set("tombo", codigo.replace(/\D/g, ""));
@@ -116,32 +130,32 @@
       url.searchParams.set("scanner_return", "1");
       url.searchParams.set("t", Date.now());
 
+      if (html5QrCode) {
+        html5QrCode.stop().catch(() => {});
+      }
+
       window.top.location.replace(url.toString());
     }
 
     function iniciarScanner() {
       html5QrCode = new Html5Qrcode("reader");
       
-      // CONFIGURAÇÃO DE ALTA PERFORMANCE
       const config = { 
         fps: 25, 
-        qrbox: { width: 300, height: 160 }, // QRBox aumentado no JS também
+        qrbox: { width: 300, height: 160 }, 
         aspectRatio: 1.0 
       };
       
-      // Chamada direta para acelerar a abertura no Safari/Chrome
       html5QrCode.start({ facingMode: "environment" }, config, (text) => {
         if (navigator.vibrate) navigator.vibrate(100);
         retornarAoApp(text);
       }).then(() => {
-        document.querySelector('.reading-status').innerText = "Lendo...";
+        document.getElementById('status-text').innerText = "Lendo...";
       }).catch(() => {
-        // Fallback para câmera frontal se necessário
-        html5QrCode.start({ facingMode: "user" }, config, (text) => retornarAoApp(text));
+        document.getElementById('status-text').innerText = "Erro ao acessar câmera.";
       });
     }
 
-    // DISPARO IMEDIATO: Inicia assim que o script é carregado, sem esperar o load completo da página
     if (document.readyState === "complete" || document.readyState === "interactive") {
       iniciarScanner();
     } else {
