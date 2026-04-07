@@ -12,193 +12,84 @@
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     html, body {
-      margin: 0;
-      padding: 0;
-      min-height: 100%;
-      font-family: Arial, sans-serif;
-      color: #fff;
-      /* Fundo Gradiente do Modelo */
-      background:
-        radial-gradient(circle at top, rgba(64, 110, 255, 0.20), transparent 34%),
-        linear-gradient(180deg, #030d20 0%, #071a3b 45%, #041127 100%);
+      margin: 0; padding: 0; min-height: 100%;
+      font-family: Arial, sans-serif; color: #fff;
+      background: radial-gradient(circle at top, rgba(64, 110, 255, 0.20), transparent 34%),
+                  linear-gradient(180deg, #030d20 0%, #071a3b 45%, #041127 100%);
     }
 
-    body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 14px;
-    }
+    body { display: flex; align-items: center; justify-content: center; padding: 14px; }
 
     .app {
-      width: 100%;
-      max-width: 430px;
-      border-radius: 26px;
-      padding: 18px 16px 18px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.10);
-      backdrop-filter: blur(12px);
-      box-shadow:
-        0 20px 50px rgba(0, 0, 0, 0.38),
-        inset 0 1px 0 rgba(255,255,255,0.05);
+      width: 100%; max-width: 430px; border-radius: 26px; padding: 18px 16px;
+      background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.10);
+      backdrop-filter: blur(12px); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.38);
       position: relative;
     }
 
-    .logo-wrap {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 10px;
-    }
+    .logo-wrap { display: flex; justify-content: center; margin-bottom: 10px; }
+    .logo-wrap img { max-width: 210px; height: auto; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.28)); }
 
-    .logo-wrap img {
-      max-width: 210px;
-      width: 100%;
-      height: auto;
-      object-fit: contain;
-      display: block;
-      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.28));
-    }
-
-    .title {
-      text-align: center;
-      font-size: 17px;
-      font-weight: 700;
-      margin-bottom: 6px;
-      letter-spacing: 0.2px;
-    }
-
-    .subtitle {
-      text-align: center;
-      font-size: 13px;
-      color: rgba(255,255,255,0.82);
-      line-height: 1.45;
-      margin-bottom: 16px;
-    }
+    .title { text-align: center; font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+    .subtitle { text-align: center; font-size: 13px; color: rgba(255,255,255,0.82); margin-bottom: 16px; }
 
     .scanner-shell {
-      position: relative;
-      overflow: hidden;
-      border-radius: 22px;
-      background: #000;
-      min-height: 310px;
-      box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,0.08),
-        0 10px 30px rgba(0,0,0,0.32);
+      position: relative; overflow: hidden; border-radius: 22px;
+      background: #000; min-height: 340px; /* Aumentado levemente */
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
     }
 
-    #reader {
-      width: 100%;
-      min-height: 310px;
-      background: #000;
-      border: none !important;
-    }
+    #reader { width: 100%; min-height: 340px; background: #000; border: none !important; }
+    #reader video { object-fit: cover !important; border-radius: 22px; }
 
-    #reader video {
-      width: 100% !important;
-      height: 310px !important;
-      object-fit: cover !important;
-      border-radius: 22px;
-    }
+    .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
 
-    /* Overlay de leitura e Laser */
-    .overlay {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 20;
-    }
-
+    /* Retângulo de Captura Ampliado */
     .scan-box {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 78%;
-      max-width: 300px;
-      height: 120px;
+      position: absolute; left: 50%; top: 50%;
+      width: 85%; max-width: 320px; height: 160px; /* Aumentado de 120px para 160px */
       transform: translate(-50%, -50%);
-      border: 2px solid rgba(255,255,255,0.95);
-      border-radius: 12px;
-      box-shadow: 0 0 0 9999px rgba(0,0,0,0.42);
+      border: 2px solid rgba(255,255,255,0.95); border-radius: 12px;
+      box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
     }
 
-    .corner {
-      position: absolute;
-      width: 24px;
-      height: 24px;
-      border: 4px solid #fff;
-    }
+    .corner { position: absolute; width: 24px; height: 24px; border: 4px solid #fff; }
     .tl { top: -2px; left: -2px; border-right: none; border-bottom: none; border-top-left-radius: 10px; }
     .tr { top: -2px; right: -2px; border-left: none; border-bottom: none; border-top-right-radius: 10px; }
     .bl { bottom: -2px; left: -2px; border-right: none; border-top: none; border-bottom-left-radius: 10px; }
     .br { bottom: -2px; right: -2px; border-left: none; border-top: none; border-bottom-right-radius: 10px; }
 
     .laser-line {
-      position: absolute;
-      left: 5%;
-      right: 5%;
-      height: 3px;
-      background: #ff4747;
-      box-shadow: 0 0 12px #ff4747;
-      animation: laserMove 2.2s ease-in-out infinite;
+      position: absolute; left: 5%; right: 5%; height: 2px;
+      background: #ff4747; box-shadow: 0 0 15px #ff4747;
+      animation: laserMove 2.5s ease-in-out infinite;
     }
 
-    @keyframes laserMove {
-      0%, 100% { top: 15%; }
-      50% { top: 85%; }
-    }
+    @keyframes laserMove { 0%, 100% { top: 15%; } 50% { top: 85%; } }
 
-    .reading-status {
-      margin-top: 14px;
-      text-align: center;
-      font-size: 15px;
-      font-weight: 600;
-    }
-
-    .cancel-wrap {
-      margin-top: 16px;
-      display: flex;
-      justify-content: center;
-    }
-
+    .reading-status { margin-top: 14px; text-align: center; font-size: 15px; font-weight: 600; }
+    .cancel-wrap { margin-top: 16px; display: flex; justify-content: center; }
     .cancel-btn {
-      min-width: 180px;
-      height: 48px;
-      border: none;
-      border-radius: 14px;
+      min-width: 180px; height: 48px; border: none; border-radius: 14px;
       background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%);
-      color: #fff;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 8px 18px rgba(0,0,0,0.22);
+      color: #fff; font-weight: 700; cursor: pointer;
     }
 
     #successOverlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 168, 89, 0.94);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
+      position: fixed; inset: 0; background: rgba(0, 168, 89, 0.96);
+      display: none; align-items: center; justify-content: center; z-index: 9999;
     }
   </style>
 </head>
 <body>
 
   <div class="app">
-    <div class="logo-wrap">
-      <img src="logo-inventjus.png" alt="Invent JUS">
-    </div>
-
+    <div class="logo-wrap"><img src="logo-inventjus.png" alt="Invent JUS"></div>
     <div class="title">Leitor de código de barras</div>
-    <div class="subtitle">Centralize a etiqueta patrimonial dentro da área de leitura.</div>
+    <div class="subtitle">Centralize a etiqueta patrimonial no retângulo abaixo.</div>
 
     <div class="scanner-shell">
       <div id="reader"></div>
@@ -211,7 +102,7 @@
       </div>
     </div>
 
-    <div class="reading-status">Lendo...</div>
+    <div class="reading-status">Iniciando câmera...</div>
 
     <div class="cancel-wrap">
       <button class="cancel-btn" onclick="cancelarLeitura()">✕ Cancelar</button>
@@ -225,7 +116,7 @@
   <div id="successOverlay">
     <div style="text-align:center">
       <div style="font-size:72px">✔</div>
-      <div style="font-size:22px; font-weight:800">Tombo lido com sucesso</div>
+      <div style="font-size:22px; font-weight:800">Tombo Lido!</div>
     </div>
   </div>
 
@@ -238,7 +129,7 @@
       if (processando) return;
       processando = true;
 
-      if (html5QrCode && html5QrCode.isScanning) {
+      if (html5QrCode) {
         try { await html5QrCode.stop(); } catch (e) {}
       }
 
@@ -251,14 +142,14 @@
 
       setTimeout(() => {
         window.top.location.replace(url.toString());
-      }, codigo ? 600 : 0);
+      }, codigo ? 500 : 0);
     }
 
     function onScanSuccess(decodedText) {
       if (processando) return;
       const beep = document.getElementById("beepSound");
       if (beep) beep.play().catch(() => {});
-      if (navigator.vibrate) navigator.vibrate(200);
+      if (navigator.vibrate) navigator.vibrate(150);
       retornarAoApp(decodedText);
     }
 
@@ -266,18 +157,48 @@
       await retornarAoApp("");
     }
 
-    window.addEventListener("load", () => {
+    async function iniciarScanner() {
+      const statusText = document.querySelector('.reading-status');
       html5QrCode = new Html5Qrcode("reader");
-      const config = { 
-        fps: 20, 
-        qrbox: { width: 250, height: 120 },
-        aspectRatio: 1.777
+
+      // CONFIGURAÇÕES MELHORADAS PARA CAPTURA À DISTÂNCIA
+      const config = {
+        fps: 20,
+        // qrbox aumentado para melhorar o foco em áreas maiores
+        qrbox: { width: 300, height: 160 }, 
+        aspectRatio: 1.0,
+        // Desativar flip melhora performance em alguns dispositivos
+        disableFlip: true 
       };
-      
-      html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
-        .catch(() => {
-          html5QrCode.start({ facingMode: "user" }, config, onScanSuccess);
-        });
+
+      // Restrições de vídeo para forçar alta resolução (ajuda na leitura de longe)
+      const videoConstraints = {
+        facingMode: "environment",
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      };
+
+      try {
+        await html5QrCode.start(videoConstraints, config, onScanSuccess);
+        statusText.innerText = "Lendo Tombo...";
+        
+        // Tentar aplicar Foco Contínuo se disponível (Melhora leitura de perto/longe)
+        const track = html5QrCode.getRunningTrack();
+        if (track && track.getCapabilities().focusMode) {
+            track.applyConstraints({
+                advanced: [{ focusMode: "continuous" }]
+            }).catch(() => {});
+        }
+
+      } catch (err) {
+        console.error("Erro ao iniciar:", err);
+        statusText.innerText = "Erro ao acessar câmera.";
+      }
+    }
+
+    window.addEventListener("load", () => {
+      // Pequeno delay para garantir que o hardware esteja pronto
+      setTimeout(iniciarScanner, 200);
     });
   </script>
 </body>
