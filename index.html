@@ -33,19 +33,10 @@
     #reader { width: 100%; height: 100%; background: #000; }
     #reader video { object-fit: cover !important; height: 300px !important; border-radius: 22px; }
 
-    /* Botão de Ativação Centralizado */
-    #start-btn {
-      position: absolute; z-index: 50;
-      background: #34c759; color: white; border: none;
-      padding: 15px 30px; border-radius: 12px;
-      font-weight: bold; font-size: 16px; cursor: pointer;
-      box-shadow: 0 4px 15px rgba(52, 199, 89, 0.4);
-    }
-
     .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 20; display: none; }
     .scan-box {
       position: absolute; left: 50%; top: 50%;
-      width: 85%; height: 150px; transform: translate(-50%, -50%);
+      width: 85%; height: 140px; transform: translate(-50%, -50%);
       border: 2px solid rgba(255,255,255,0.95); border-radius: 12px;
       box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
     }
@@ -61,16 +52,19 @@
     }
     @keyframes laserMove { 0%, 100% { top: 15%; } 50% { top: 85%; } }
 
-    .reading-status { margin-top: 14px; text-align: center; font-size: 14px; font-weight: 600; min-height: 1.2em; }
+    .reading-status { margin-top: 14px; text-align: center; font-size: 14px; font-weight: 600; }
     .cancel-wrap { margin-top: 16px; display: flex; justify-content: center; }
     .cancel-btn {
       min-width: 180px; height: 48px; border: none; border-radius: 14px;
       background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%);
       color: #fff; font-weight: 700; cursor: pointer;
     }
-    #successOverlay {
-      position: fixed; inset: 0; background: rgba(0, 168, 89, 0.98);
-      display: none; align-items: center; justify-content: center; z-index: 9999;
+
+    /* Botão que aparece SÓ se o auto-start falhar */
+    #manual-btn {
+      display: none; background: #34c759; color: white; border: none;
+      padding: 12px 24px; border-radius: 10px; font-weight: bold;
+      margin-top: 10px; cursor: pointer;
     }
   </style>
 </head>
@@ -78,10 +72,9 @@
 
   <div class="app">
     <div class="logo-wrap"><img src="logo-inventjus.png" alt="Invent JUS"></div>
-    <div class="reading-status" id="status">Toque no botão para escanear</div>
+    <div class="reading-status" id="status">Iniciando leitor...</div>
 
     <div class="scanner-shell">
-      <button id="start-btn" onclick="iniciarScanner()">ABRIR CÂMERA</button>
       <div id="reader"></div>
       <div class="overlay" id="overlay">
         <div class="scan-box">
@@ -91,14 +84,12 @@
         </div>
       </div>
     </div>
+    
+    <center><button id="manual-btn" onclick="iniciarScanner()">ATIVAR CÂMERA MANUALMENTE</button></center>
 
     <div class="cancel-wrap">
       <button class="cancel-btn" onclick="retornarAoApp('')">✕ Cancelar</button>
     </div>
-  </div>
-
-  <div id="successOverlay">
-    <div style="text-align:center"><div style="font-size:70px">✔</div><b>LIDO!</b></div>
   </div>
 
   <script>
@@ -116,49 +107,46 @@
       url.searchParams.set("scanner_return", "1");
       url.searchParams.set("t", Date.now());
 
-      if (codigo) document.getElementById("successOverlay").style.display = "flex";
       window.top.location.replace(url.toString());
     }
 
     async function iniciarScanner() {
-      const btn = document.getElementById('start-btn');
       const status = document.getElementById('status');
       const overlay = document.getElementById('overlay');
+      const mBtn = document.getElementById('manual-btn');
       
-      btn.style.display = "none";
-      status.innerText = "Iniciando...";
+      status.innerText = "Acessando câmera...";
+      mBtn.style.display = "none";
 
+      if (html5QrCode) { try { await html5QrCode.clear(); } catch(e){} }
       html5QrCode = new Html5Qrcode("reader");
 
       const config = {
-        fps: 25,
-        qrbox: { width: 300, height: 150 },
+        fps: 20,
+        qrbox: { width: 280, height: 140 },
         aspectRatio: 1.0
       };
 
       try {
-        // Chamada direta disparada pelo CLIQUE do usuário (Safari adora isso)
         await html5QrCode.start({ facingMode: "environment" }, config, (text) => {
           if (!processando) {
             if (navigator.vibrate) navigator.vibrate(100);
             retornarAoApp(text);
           }
         });
-        
         status.innerText = "Scanner Ativo";
         overlay.style.display = "block";
-
-        // Tenta melhorar o foco após abrir
-        const track = html5QrCode.getRunningTrack();
-        if (track && track.getCapabilities().focusMode?.includes('continuous')) {
-          track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
-        }
       } catch (err) {
-        status.innerText = "Erro ao acessar câmera.";
-        btn.style.display = "block";
-        btn.innerText = "TENTAR NOVAMENTE";
+        console.error(err);
+        status.innerText = "Câmera bloqueada pelo Safari.";
+        mBtn.style.display = "block"; // Mostra botão apenas se falhar
       }
     }
+
+    // Auto-start com delay maior para o Safari permitir
+    window.addEventListener("load", () => {
+      setTimeout(iniciarScanner, 600);
+    });
   </script>
 </body>
 </html>
