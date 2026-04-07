@@ -3,94 +3,119 @@
 <head>
   <meta charset="UTF-8" />
   <title>Invent JUS</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Invent JUS">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
+    /* --- CSS ESTÉTICO DO SEU MODELO --- */
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    
+
     html, body {
-      margin: 0; padding: 0; height: 100%;
-      font-family: -apple-system, system-ui, sans-serif;
-      color: #fff;
-      /* Fundo moderno gradiente */
-      background: radial-gradient(circle at top, rgba(64, 110, 255, 0.15), transparent 40%),
-                  linear-gradient(180deg, #030d20 0%, #041127 100%);
-      display: flex; align-items: center; justify-content: center;
-      overflow: hidden;
+      margin: 0; padding: 0; min-height: 100%;
+      font-family: Arial, sans-serif; color: #fff;
+      background:
+        radial-gradient(circle at top, rgba(64, 110, 255, 0.20), transparent 34%),
+        linear-gradient(180deg, #030d20 0%, #071a3b 45%, #041127 100%);
     }
 
-    .app-card {
-      width: 90%; max-width: 400px;
-      padding: 20px;
-      border-radius: 28px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(15px);
-      text-align: center;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-    }
+    body { display: flex; align-items: center; justify-content: center; padding: 14px; }
 
-    .logo-text { font-size: 18px; font-weight: 700; letter-spacing: 2px; margin-bottom: 15px; opacity: 0.9; }
-
-    #reader {
-      width: 100%;
-      height: 280px; /* Altura otimizada para abertura rápida */
-      border-radius: 20px;
-      overflow: hidden;
-      background: #000;
+    .app {
+      width: 100%; max-width: 430px; border-radius: 26px; padding: 18px 16px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255,255,255,0.05);
       position: relative;
     }
 
-    /* Remove bordas extras da biblioteca */
-    #reader * { border: none !important; }
-    #reader video { object-fit: cover !important; width: 100% !important; height: 100% !important; }
+    .logo-wrap { display: flex; justify-content: center; align-items: center; margin-bottom: 10px; }
+    .logo-wrap img { max-width: 210px; width: 100%; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.28)); }
 
-    /* Overlay de mira moderna */
-    .scan-region {
-      position: absolute; inset: 0;
-      border: 2px solid transparent;
-      background: linear-gradient(#fff, #fff) 50% 50%/70% 2px no-repeat, 
-                  linear-gradient(#fff, #fff) 50% 50%/2px 40% no-repeat;
-      pointer-events: none;
-      z-index: 2; opacity: 0.3;
+    .title { text-align: center; font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+    .subtitle { text-align: center; font-size: 13px; color: rgba(255,255,255,0.82); margin-bottom: 16px; }
+
+    .scanner-shell {
+      position: relative; overflow: hidden; border-radius: 22px;
+      background: #000; min-height: 310px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 10px 30px rgba(0,0,0,0.32);
     }
 
-    .btn-cancel {
-      margin-top: 20px;
-      width: 100%;
-      padding: 18px;
-      border: none;
-      border-radius: 18px;
-      background: rgba(255, 59, 48, 0.15);
-      color: #ff453a;
-      font-weight: 700;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background 0.2s;
+    #reader { width: 100%; min-height: 310px; background: #000; border: none !important; }
+    #reader video { width: 100% !important; height: 310px !important; object-fit: cover !important; border-radius: 22px; }
+
+    /* --- MIRA E LASER --- */
+    .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
+    .scan-box {
+      position: absolute; left: 50%; top: 50%; width: 78%; height: 120px;
+      transform: translate(-50%, -50%);
+      border: 2px solid rgba(255,255,255,0.95); border-radius: 12px;
+      box-shadow: 0 0 0 9999px rgba(0,0,0,0.42);
+    }
+    .corner { position: absolute; width: 24px; height: 24px; border: 4px solid #fff; z-index: 3; }
+    .tl { top: -2px; left: -2px; border-right: none; border-bottom: none; border-top-left-radius: 10px; }
+    .tr { top: -2px; right: -2px; border-left: none; border-bottom: none; border-top-right-radius: 10px; }
+    .bl { bottom: -2px; left: -2px; border-right: none; border-top: none; border-bottom-left-radius: 10px; }
+    .br { bottom: -2px; right: -2px; border-left: none; border-top: none; border-bottom-right-radius: 10px; }
+
+    .laser-line {
+      position: absolute; left: 5%; right: 5%; height: 3px; top: 12%;
+      background: #ff4747; box-shadow: 0 0 12px #ff4747;
+      animation: laserMove 2.2s ease-in-out infinite; z-index: 2;
+    }
+    @keyframes laserMove { 0% { top: 12%; } 50% { top: 88%; } 100% { top: 12%; } }
+
+    .reading-status { margin-top: 14px; text-align: center; font-size: 15px; font-weight: 600; }
+    .cancel-btn {
+      min-width: 180px; height: 48px; border: none; border-radius: 14px;
+      background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%);
+      color: #fff; font-weight: 700; cursor: pointer; display: block; margin: 16px auto 0;
     }
 
-    #success-overlay {
-      position: fixed; inset: 0;
-      background: #34c759;
-      display: none; align-items: center; justify-content: center;
-      z-index: 100; font-weight: 800; font-size: 24px;
-      animation: fadeIn 0.2s;
+    #successOverlay {
+      position: fixed; inset: 0; background: rgba(0, 168, 89, 0.96);
+      display: none; align-items: center; justify-content: center; z-index: 9999;
     }
-
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   </style>
 </head>
 <body>
 
-  <div class="app-card">
-    <div class="logo-text">INVENT JUS</div>
-    <div id="reader"></div>
-    <button class="btn-cancel" onclick="retornarAoApp('')">✕ CANCELAR</button>
+  <div class="app">
+    <div class="logo-wrap">
+      <img src="logo-inventjus.png" alt="Invent JUS">
+    </div>
+
+    <div class="title">Leitor de código de barras</div>
+    <div class="subtitle">Centralize a etiqueta patrimonial dentro da área de leitura.</div>
+
+    <div class="scanner-shell">
+      <div id="reader"></div>
+      <div class="overlay">
+        <div class="scan-box">
+          <div class="corner tl"></div><div class="corner tr"></div>
+          <div class="corner bl"></div><div class="corner br"></div>
+          <div class="laser-line"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reading-status">Lendo...</div>
+
+    <button class="cancel-btn" onclick="retornarAoApp('')">✕ Cancelar</button>
   </div>
 
-  <div id="success-overlay">CÓDIGO LIDO ✔</div>
+  <div id="successOverlay">
+    <div style="text-align:center">
+      <div style="font-size:72px">✔</div>
+      <div style="font-size:22px; font-weight:800">CÓDIGO LIDO</div>
+      <div style="font-size:14px; opacity:0.8">Retornando ao inventário...</div>
+    </div>
+  </div>
 
   <script>
     const APP_URL = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
@@ -101,51 +126,51 @@
       if (isReturning) return;
       isReturning = true;
 
-      // EXTREMA VELOCIDADE: Se houver código, mostra overlay verde imediatamente
-      if (codigo) document.getElementById("success-overlay").style.display = "flex";
+      // Se leu algo, mostra o overlay verde na hora ( feedback instantâneo)
+      if (codigo) document.getElementById("successOverlay").style.display = "flex";
 
       const url = new URL(APP_URL);
       if (codigo) url.searchParams.set("tombo", codigo.replace(/\D/g, ""));
       url.searchParams.set("scanner_return", "1");
       url.searchParams.set("t", Date.now());
 
-      // RETORNO RÁPIDO: Não espera o 'stop()' da câmera terminar para disparar o replace
+      // Tenta parar a câmera sem travar a navegação (async)
       if (html5QrCode) {
-        html5QrCode.stop().catch(() => {}); 
+        html5QrCode.stop().catch(() => {});
       }
-      
-      // Troca de página agressiva para não perder tempo
+
+      // Redirecionamento de alta prioridade
       window.top.location.replace(url.toString());
     }
 
     function onScanSuccess(decodedText) {
       if (isReturning) return;
-      if (navigator.vibrate) navigator.vibrate(80); // Vibração curta é mais rápida
+      if (navigator.vibrate) navigator.vibrate(100);
       retornarAoApp(decodedText);
     }
 
     function iniciarScanner() {
       html5QrCode = new Html5Qrcode("reader");
       
-      // Configurações mínimas = Abertura máxima
+      // Configurações focadas em ABERTURA RÁPIDA
       const config = { 
-        fps: 25, // Maior FPS para leitura instantânea
-        qrbox: { width: 260, height: 130 },
-        aspectRatio: 1.0 // Proporção 1:1 abre mais rápido no iOS
+        fps: 25, 
+        qrbox: { width: 280, height: 110 },
+        aspectRatio: 1.0 // Proporção quadrada é a mais rápida para o sensor iniciar
       };
 
       html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
-        .catch(() => {
-          // Fallback silencioso
-          document.getElementById("reader").innerHTML = '<button onclick="location.reload()" style="color:white;background:none;border:1px solid;padding:10px;border-radius:10px;">Ativar Câmera</button>';
+        .catch(err => {
+          console.error("Erro ao iniciar:", err);
+          document.querySelector('.reading-status').innerText = "Erro ao acessar câmera.";
         });
     }
 
-    // DISPARO IMEDIATO
+    // Inicialização imediata
     if (document.readyState === "complete" || document.readyState === "interactive") {
-      iniciarScanner();
+      setTimeout(iniciarScanner, 100);
     } else {
-      window.addEventListener("load", iniciarScanner);
+      window.addEventListener("load", () => setTimeout(iniciarScanner, 100));
     }
   </script>
 </body>
