@@ -4,96 +4,82 @@
   <meta charset="UTF-8" />
   <title>Invent JUS</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Invent JUS">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    
     html, body {
-      margin: 0; padding: 0; min-height: 100%;
+      margin: 0; padding: 0; height: 100%;
       font-family: Arial, sans-serif; color: #fff;
       background: radial-gradient(circle at top, rgba(64, 110, 255, 0.20), transparent 34%),
                   linear-gradient(180deg, #030d20 0%, #071a3b 45%, #041127 100%);
+      overflow: hidden;
     }
-
     body { display: flex; align-items: center; justify-content: center; padding: 14px; }
-
     .app {
       width: 100%; max-width: 430px; border-radius: 26px; padding: 18px 16px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.10);
-      backdrop-filter: blur(12px);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255,255,255,0.05);
-      position: relative;
+      background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.10);
+      backdrop-filter: blur(12px); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.38); position: relative;
     }
-
-    .logo-wrap { display: flex; justify-content: center; align-items: center; margin-bottom: 10px; }
-    .logo-wrap img { max-width: 210px; width: 100%; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.28)); }
-
-    .title { text-align: center; font-size: 17px; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.2px; }
-    .subtitle { text-align: center; font-size: 13px; color: rgba(255,255,255,0.82); line-height: 1.45; margin-bottom: 16px; }
-
+    .logo-wrap { display: flex; justify-content: center; margin-bottom: 10px; }
+    .logo-wrap img { max-width: 210px; height: auto; }
+    
     .scanner-shell {
       position: relative; overflow: hidden; border-radius: 22px;
-      background: #000; min-height: 310px;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 10px 30px rgba(0,0,0,0.32);
+      background: #000; height: 300px; display: flex; align-items: center; justify-content: center;
     }
+    #reader { width: 100%; height: 100%; background: #000; border: none !important; }
+    #reader video { object-fit: cover !important; height: 300px !important; border-radius: 22px; }
 
-    #reader { width: 100%; min-height: 310px; background: #000; border: none !important; }
-    #reader video { width: 100% !important; height: 310px !important; object-fit: cover !important; border-radius: 22px; }
+    /* Esconde o retângulo padrão da biblioteca (o segundo retângulo) */
+    #reader__scan_region svg { display: none !important; }
+    #reader__scan_region { background: transparent !important; }
 
-    .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
-
+    .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 20; display: none; }
+    
+    /* AJUSTE AQUI: Removi o 'border: 2px solid #fff' */
     .scan-box {
-      position: absolute; left: 50%; top: 50%;
-      width: 82%; height: 160px; /* Altura ampliada solicitada */
+      position: absolute; left: 50%; top: 50%; width: 85%; height: 140px; 
       transform: translate(-50%, -50%);
-      border: 2px solid rgba(255,255,255,0.95); border-radius: 12px;
-      box-shadow: 0 0 0 9999px rgba(0,0,0,0.42);
+      /* Border removido para sumir o retângulo branco interno */
+      box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
     }
 
-    .corner { position: absolute; width: 24px; height: 24px; border: 4px solid #fff; }
-    .tl { top: -2px; left: -2px; border-right: none; border-bottom: none; border-top-left-radius: 10px; }
-    .tr { top: -2px; right: -2px; border-left: none; border-bottom: none; border-top-right-radius: 10px; }
-    .bl { bottom: -2px; left: -2px; border-right: none; border-top: none; border-bottom-left-radius: 10px; }
-    .br { bottom: -2px; right: -2px; border-left: none; border-top: none; border-bottom-right-radius: 10px; }
-
+    /* Mantemos os cantos para dar o efeito de mira */
+    .corner { position: absolute; width: 20px; height: 20px; border: 4px solid #fff; z-index: 3; }
+    .tl { top: -2px; left: -2px; border-right: none; border-bottom: none; border-top-left-radius: 8px; }
+    .tr { top: -2px; right: -2px; border-left: none; border-bottom: none; border-top-right-radius: 8px; }
+    .bl { bottom: -2px; left: -2px; border-right: none; border-top: none; border-bottom-left-radius: 8px; }
+    .br { bottom: -2px; right: -2px; border-left: none; border-top: none; border-bottom-right-radius: 8px; }
+    
     .laser-line {
-      position: absolute; left: 5%; right: 5%; height: 3px;
-      background: #ff4747; box-shadow: 0 0 12px #ff4747;
-      animation: laserMove 2.2s ease-in-out infinite;
+      position: absolute; left: 5%; right: 5%; height: 2px; background: #ff4747;
+      box-shadow: 0 0 10px #ff4747; animation: laserMove 2s ease-in-out infinite;
     }
-    @keyframes laserMove { 0%, 100% { top: 12%; } 50% { top: 88%; } }
-
-    .reading-status { margin-top: 14px; text-align: center; font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.92); }
+    @keyframes laserMove { 0%, 100% { top: 15%; } 50% { top: 85%; } }
 
     .cancel-btn {
-      display: block; margin: 16px auto 0; min-width: 180px; height: 48px;
-      border: none; border-radius: 14px; background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%);
-      color: #fff; font-weight: 700; cursor: pointer; box-shadow: 0 8px 18px rgba(0,0,0,0.22);
+      min-width: 180px; height: 48px; border: none; border-radius: 14px;
+      background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%);
+      color: #fff; font-weight: 700; cursor: pointer; display: block; margin: 16px auto 0;
     }
 
-    #successOverlay {
-      position: fixed; inset: 0; background: rgba(0, 168, 89, 0.96);
-      display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999;
+    #start-btn {
+      position: absolute; z-index: 50; background: #34c759; color: white; border: none;
+      padding: 18px 30px; border-radius: 14px; font-weight: bold; cursor: pointer;
     }
   </style>
 </head>
 <body>
 
   <div class="app">
-    <div class="logo-wrap">
-      <img src="logo-inventjus.png" alt="Invent JUS">
-    </div>
-
-    <div class="title">Leitor de código de barras</div>
-    <div class="subtitle">Centralize a etiqueta patrimonial dentro da área de leitura.</div>
-
+    <div class="logo-wrap"><img src="logo-inventjus.png" alt="Invent JUS"></div>
+    
     <div class="scanner-shell">
+      <button id="start-btn" onclick="iniciarScanner()">ATIVAR CÂMERA</button>
       <div id="reader"></div>
-      <div class="overlay">
+      <div class="overlay" id="overlay">
         <div class="scan-box">
           <div class="corner tl"></div><div class="corner tr"></div>
           <div class="corner bl"></div><div class="corner br"></div>
@@ -102,64 +88,42 @@
       </div>
     </div>
 
-    <div class="reading-status" id="status-text">Iniciando...</div>
-
     <button class="cancel-btn" onclick="retornarAoApp('')">✕ Cancelar</button>
   </div>
 
-  <div id="successOverlay">
-    <div style="font-size:72px">✔</div>
-    <div style="font-size:22px; font-weight:800">TOMBO LIDO</div>
-    <div style="font-size:14px; opacity:0.8">Retornando ao sistema...</div>
-  </div>
-
   <script>
-    const APP_URL = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
+    const appReturnUrl = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
     let html5QrCode = null;
-    let isReturning = false;
 
     async function retornarAoApp(codigo = "") {
-      if (isReturning) return;
-      isReturning = true;
-
-      const url = new URL(APP_URL);
-      if (codigo) {
-        url.searchParams.set("tombo", codigo.replace(/\D/g, ""));
-        document.getElementById("successOverlay").style.display = "flex";
-      }
+      if (html5QrCode) { try { await html5QrCode.stop(); } catch (e) {} }
+      const url = new URL(appReturnUrl);
+      if (codigo) url.searchParams.set("tombo", codigo.replace(/\D/g, ""));
       url.searchParams.set("scanner_return", "1");
       url.searchParams.set("t", Date.now());
-
-      if (html5QrCode) {
-        html5QrCode.stop().catch(() => {});
-      }
-
       window.top.location.replace(url.toString());
     }
 
-    function iniciarScanner() {
+    async function iniciarScanner() {
+      document.getElementById('start-btn').style.display = "none";
       html5QrCode = new Html5Qrcode("reader");
-      
-      const config = { 
-        fps: 25, 
-        qrbox: { width: 300, height: 160 }, 
-        aspectRatio: 1.0 
-      };
-      
-      html5QrCode.start({ facingMode: "environment" }, config, (text) => {
-        if (navigator.vibrate) navigator.vibrate(100);
-        retornarAoApp(text);
-      }).then(() => {
-        document.getElementById('status-text').innerText = "Lendo...";
-      }).catch(() => {
-        document.getElementById('status-text').innerText = "Erro ao acessar câmera.";
-      });
-    }
 
-    if (document.readyState === "complete" || document.readyState === "interactive") {
-      iniciarScanner();
-    } else {
-      window.addEventListener("load", iniciarScanner);
+      const config = {
+        fps: 25,
+        qrbox: { width: 300, height: 160 },
+        aspectRatio: 1.0,
+        formatsToSupport: [ Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.CODE_39 ]
+      };
+
+      try {
+        await html5QrCode.start({ facingMode: "environment" }, config, (text) => {
+          if (navigator.vibrate) navigator.vibrate(100);
+          retornarAoApp(text);
+        });
+        document.getElementById('overlay').style.display = "block";
+      } catch (err) {
+        document.getElementById('start-btn').style.display = "block";
+      }
     }
   </script>
 </body>
