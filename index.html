@@ -3,115 +3,271 @@
 <head>
   <meta charset="UTF-8" />
   <title>Invent JUS</title>
+
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Invent JUS">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
     html, body {
-      margin: 0; padding: 0; height: 100%;
-      font-family: Arial, sans-serif; color: #fff;
-      background: radial-gradient(circle at top, rgba(64, 110, 255, 0.20), transparent 34%),
-                  linear-gradient(180deg, #030d20 0%, #071a3b 45%, #041127 100%);
-      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: Arial, sans-serif;
+      color: #fff;
+      /* Fundo Gradiente Moderno */
+      background:
+        radial-gradient(circle at top, rgba(64, 110, 255, 0.20), transparent 34%),
+        linear-gradient(180deg, #030d20 0%, #071a3b 45%, #041127 100%);
     }
-    body { display: flex; align-items: center; justify-content: center; padding: 14px; }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+    }
+
+    /* Card com efeito Blur (Glassmorphism) */
     .app {
-      width: 100%; max-width: 430px; border-radius: 26px; padding: 18px 16px;
-      background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.10);
-      backdrop-filter: blur(12px); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.38); position: relative;
+      width: 100%;
+      max-width: 430px;
+      border-radius: 26px;
+      padding: 18px 16px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255,255,255,0.05);
+      position: relative;
     }
-    .logo-wrap { display: flex; justify-content: center; margin-bottom: 10px; }
-    .logo-wrap img { max-width: 210px; height: auto; }
-    
+
+    .logo-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .logo-wrap img {
+      max-width: 210px;
+      width: 100%;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.28));
+    }
+
+    .title {
+      text-align: center;
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 13px;
+      color: rgba(255,255,255,0.82);
+      margin-bottom: 16px;
+    }
+
     .scanner-shell {
-      position: relative; overflow: hidden; border-radius: 22px;
-      background: #000; height: 300px; display: flex; align-items: center; justify-content: center;
-    }
-    #reader { width: 100%; height: 100%; background: #000; }
-    #reader video { object-fit: cover !important; height: 300px !important; border-radius: 22px; }
-
-    /* Botão de Ativação - Único jeito do Safari liberar rápido */
-    #start-btn {
-      position: absolute; z-index: 50; background: #34c759; color: white; border: none;
-      padding: 18px 30px; border-radius: 14px; font-weight: bold; font-size: 16px; cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      position: relative;
+      overflow: hidden;
+      border-radius: 22px;
+      background: #000;
+      min-height: 310px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 10px 30px rgba(0,0,0,0.32);
     }
 
-    .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 20; display: none; }
+    #reader {
+      width: 100%;
+      min-height: 310px;
+      background: #000;
+      border: none !important;
+    }
+
+    #reader video {
+      width: 100% !important;
+      height: 310px !important;
+      object-fit: cover !important;
+      border-radius: 22px;
+    }
+
+    /* Camada de Mira e Laser */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 20;
+    }
+
     .scan-box {
-      position: absolute; left: 50%; top: 50%; width: 85%; height: 140px; 
-      transform: translate(-50%, -50%); border: 2px solid #fff; border-radius: 12px;
-      box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 78%;
+      height: 120px;
+      transform: translate(-50%, -50%);
+      border: 2px solid rgba(255,255,255,0.95);
+      border-radius: 12px;
+      box-shadow: 0 0 0 9999px rgba(0,0,0,0.42);
     }
+
+    .corner {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border: 4px solid #fff;
+    }
+    .tl { top: -2px; left: -2px; border-right: none; border-bottom: none; border-top-left-radius: 10px; }
+    .tr { top: -2px; right: -2px; border-left: none; border-bottom: none; border-top-right-radius: 10px; }
+    .bl { bottom: -2px; left: -2px; border-right: none; border-top: none; border-bottom-left-radius: 10px; }
+    .br { bottom: -2px; right: -2px; border-left: none; border-top: none; border-bottom-right-radius: 10px; }
+
     .laser-line {
-      position: absolute; left: 5%; right: 5%; height: 2px; background: #ff4747;
-      box-shadow: 0 0 10px #ff4747; animation: laserMove 2s ease-in-out infinite;
+      position: absolute;
+      left: 5%;
+      right: 5%;
+      height: 3px;
+      background: #ff4747;
+      box-shadow: 0 0 12px #ff4747;
+      animation: laserMove 2.2s ease-in-out infinite;
     }
-    @keyframes laserMove { 0%, 100% { top: 15%; } 50% { top: 85%; } }
+
+    @keyframes laserMove {
+      0%, 100% { top: 12%; }
+      50% { top: 88%; }
+    }
+
+    .reading-status {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 600;
+    }
 
     .cancel-btn {
-      min-width: 180px; height: 48px; border: none; border-radius: 14px;
+      display: block;
+      margin: 16px auto 0;
+      min-width: 180px;
+      height: 48px;
+      border: none;
+      border-radius: 14px;
       background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%);
-      color: #fff; font-weight: 700; cursor: pointer; display: block; margin: 16px auto 0;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.22);
+    }
+
+    #successOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 168, 89, 0.96);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
     }
   </style>
 </head>
 <body>
 
   <div class="app">
-    <div class="logo-wrap"><img src="logo-inventjus.png" alt="Invent JUS"></div>
-    
+    <div class="logo-wrap">
+      <img src="logo-inventjus.png" alt="Invent JUS">
+    </div>
+
+    <div class="title">Leitor de código de barras</div>
+    <div class="subtitle">Centralize a etiqueta patrimonial dentro da área de leitura.</div>
+
     <div class="scanner-shell">
-      <button id="start-btn" onclick="iniciarScanner()">ATIVAR CÂMERA</button>
       <div id="reader"></div>
-      <div class="overlay" id="overlay">
-        <div class="scan-box"><div class="laser-line"></div></div>
+      <div class="overlay">
+        <div class="scan-box">
+          <div class="corner tl"></div><div class="corner tr"></div>
+          <div class="corner bl"></div><div class="corner br"></div>
+          <div class="laser-line"></div>
+        </div>
       </div>
     </div>
 
-    <div class="cancel-wrap">
-      <button class="cancel-btn" onclick="retornarAoApp('')">✕ Cancelar</button>
-    </div>
+    <div class="reading-status">Lendo...</div>
+
+    <button class="cancel-btn" onclick="cancelarLeitura()">✕ Cancelar</button>
+  </div>
+
+  <audio id="beepSound" preload="auto" playsinline webkit-playsinline>
+    <source src="https://www.soundjay.com/button/sounds/beep-07a.mp3" type="audio/mpeg">
+  </audio>
+
+  <div id="successOverlay">
+    <div style="font-size:72px">✔</div>
+    <div style="font-size:22px; font-weight:800">TOMBO LIDO</div>
+    <div style="font-size:14px; opacity:0.8">Retornando ao sistema...</div>
   </div>
 
   <script>
-    const appReturnUrl = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
+    // Configurações do seu app
+    const APP_URL = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
     let html5QrCode = null;
+    let processando = false;
 
     async function retornarAoApp(codigo = "") {
-      if (html5QrCode) { try { await html5QrCode.stop(); } catch (e) {} }
-      const url = new URL(appReturnUrl);
+      if (processando) return;
+      processando = true;
+
+      // EXTREMA VELOCIDADE: Para a câmera e troca a URL sem esperar animações longas
+      if (html5QrCode && html5QrCode.isScanning) {
+        try { await html5QrCode.stop(); } catch (e) {}
+      }
+
+      const url = new URL(APP_URL);
       if (codigo) url.searchParams.set("tombo", codigo.replace(/\D/g, ""));
       url.searchParams.set("scanner_return", "1");
-      url.searchParams.set("t", Date.now());
+      url.searchParams.set("t", Date.now()); // Limpa cache
+
+      if (codigo) {
+        document.getElementById("successOverlay").style.display = "flex";
+      }
+
+      // Troca de página na mesma aba (pulo do gato para Safari)
       window.top.location.replace(url.toString());
     }
 
-    async function iniciarScanner() {
-      document.getElementById('start-btn').style.display = "none";
-      html5QrCode = new Html5Qrcode("reader");
-
-      const config = {
-        fps: 25,
-        qrbox: { width: 300, height: 140 },
-        aspectRatio: 1.0,
-        // Otimização para códigos de barras lineares (etiquetas patrimoniais)
-        formatsToSupport: [ Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.CODE_39 ]
-      };
-
-      try {
-        await html5QrCode.start({ facingMode: "environment" }, config, (text) => {
-          if (navigator.vibrate) navigator.vibrate(100);
-          retornarAoApp(text);
-        });
-        document.getElementById('overlay').style.display = "block";
-      } catch (err) {
-        alert("Erro: Permita o acesso à câmera no Safari.");
-        document.getElementById('start-btn').style.display = "block";
-      }
+    function onScanSuccess(decodedText) {
+      if (processando) return;
+      const beep = document.getElementById("beepSound");
+      if (beep) beep.play().catch(() => {});
+      if (navigator.vibrate) navigator.vibrate(100);
+      retornarAoApp(decodedText);
     }
+
+    async function cancelarLeitura() {
+      await retornarAoApp("");
+    }
+
+    window.addEventListener("load", () => {
+      html5QrCode = new Html5Qrcode("reader");
+      const config = { 
+        fps: 25, // Maior FPS = Leitura mais rápida
+        qrbox: { width: 280, height: 120 },
+        aspectRatio: 1.0 // Acelera abertura no sensor do iOS
+      };
+      
+      // Inicia direto para máxima performance
+      html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
+        .catch(() => {
+          html5QrCode.start({ facingMode: "user" }, config, onScanSuccess);
+        });
+    });
   </script>
 </body>
 </html>
