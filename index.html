@@ -27,44 +27,34 @@
     
     .scanner-shell {
       position: relative; overflow: hidden; border-radius: 22px;
-      background: #000; height: 300px;
-      display: flex; align-items: center; justify-content: center;
+      background: #000; height: 300px; display: flex; align-items: center; justify-content: center;
     }
     #reader { width: 100%; height: 100%; background: #000; }
     #reader video { object-fit: cover !important; height: 300px !important; border-radius: 22px; }
 
+    /* Botão de Ativação - Único jeito do Safari liberar rápido */
+    #start-btn {
+      position: absolute; z-index: 50; background: #34c759; color: white; border: none;
+      padding: 18px 30px; border-radius: 14px; font-weight: bold; font-size: 16px; cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+
     .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 20; display: none; }
     .scan-box {
-      position: absolute; left: 50%; top: 50%;
-      width: 85%; height: 140px; transform: translate(-50%, -50%);
-      border: 2px solid rgba(255,255,255,0.95); border-radius: 12px;
+      position: absolute; left: 50%; top: 50%; width: 85%; height: 140px; 
+      transform: translate(-50%, -50%); border: 2px solid #fff; border-radius: 12px;
       box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
     }
-    .corner { position: absolute; width: 20px; height: 20px; border: 4px solid #fff; }
-    .tl { top: -2px; left: -2px; border-right: none; border-bottom: none; border-top-left-radius: 8px; }
-    .tr { top: -2px; right: -2px; border-left: none; border-bottom: none; border-top-right-radius: 8px; }
-    .bl { bottom: -2px; left: -2px; border-right: none; border-top: none; border-bottom-left-radius: 8px; }
-    .br { bottom: -2px; right: -2px; border-left: none; border-top: none; border-bottom-right-radius: 8px; }
-    
     .laser-line {
       position: absolute; left: 5%; right: 5%; height: 2px; background: #ff4747;
       box-shadow: 0 0 10px #ff4747; animation: laserMove 2s ease-in-out infinite;
     }
     @keyframes laserMove { 0%, 100% { top: 15%; } 50% { top: 85%; } }
 
-    .reading-status { margin-top: 14px; text-align: center; font-size: 14px; font-weight: 600; }
-    .cancel-wrap { margin-top: 16px; display: flex; justify-content: center; }
     .cancel-btn {
       min-width: 180px; height: 48px; border: none; border-radius: 14px;
       background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%);
-      color: #fff; font-weight: 700; cursor: pointer;
-    }
-
-    /* Botão que aparece SÓ se o auto-start falhar */
-    #manual-btn {
-      display: none; background: #34c759; color: white; border: none;
-      padding: 12px 24px; border-radius: 10px; font-weight: bold;
-      margin-top: 10px; cursor: pointer;
+      color: #fff; font-weight: 700; cursor: pointer; display: block; margin: 16px auto 0;
     }
   </style>
 </head>
@@ -72,20 +62,14 @@
 
   <div class="app">
     <div class="logo-wrap"><img src="logo-inventjus.png" alt="Invent JUS"></div>
-    <div class="reading-status" id="status">Iniciando leitor...</div>
-
+    
     <div class="scanner-shell">
+      <button id="start-btn" onclick="iniciarScanner()">ATIVAR CÂMERA</button>
       <div id="reader"></div>
       <div class="overlay" id="overlay">
-        <div class="scan-box">
-          <div class="corner tl"></div><div class="corner tr"></div>
-          <div class="corner bl"></div><div class="corner br"></div>
-          <div class="laser-line"></div>
-        </div>
+        <div class="scan-box"><div class="laser-line"></div></div>
       </div>
     </div>
-    
-    <center><button id="manual-btn" onclick="iniciarScanner()">ATIVAR CÂMERA MANUALMENTE</button></center>
 
     <div class="cancel-wrap">
       <button class="cancel-btn" onclick="retornarAoApp('')">✕ Cancelar</button>
@@ -95,58 +79,39 @@
   <script>
     const appReturnUrl = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
     let html5QrCode = null;
-    let processando = false;
 
     async function retornarAoApp(codigo = "") {
-      if (processando) return;
-      processando = true;
       if (html5QrCode) { try { await html5QrCode.stop(); } catch (e) {} }
-
       const url = new URL(appReturnUrl);
       if (codigo) url.searchParams.set("tombo", codigo.replace(/\D/g, ""));
       url.searchParams.set("scanner_return", "1");
       url.searchParams.set("t", Date.now());
-
       window.top.location.replace(url.toString());
     }
 
     async function iniciarScanner() {
-      const status = document.getElementById('status');
-      const overlay = document.getElementById('overlay');
-      const mBtn = document.getElementById('manual-btn');
-      
-      status.innerText = "Acessando câmera...";
-      mBtn.style.display = "none";
-
-      if (html5QrCode) { try { await html5QrCode.clear(); } catch(e){} }
+      document.getElementById('start-btn').style.display = "none";
       html5QrCode = new Html5Qrcode("reader");
 
       const config = {
-        fps: 20,
-        qrbox: { width: 280, height: 140 },
-        aspectRatio: 1.0
+        fps: 25,
+        qrbox: { width: 300, height: 140 },
+        aspectRatio: 1.0,
+        // Otimização para códigos de barras lineares (etiquetas patrimoniais)
+        formatsToSupport: [ Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.CODE_39 ]
       };
 
       try {
         await html5QrCode.start({ facingMode: "environment" }, config, (text) => {
-          if (!processando) {
-            if (navigator.vibrate) navigator.vibrate(100);
-            retornarAoApp(text);
-          }
+          if (navigator.vibrate) navigator.vibrate(100);
+          retornarAoApp(text);
         });
-        status.innerText = "Scanner Ativo";
-        overlay.style.display = "block";
+        document.getElementById('overlay').style.display = "block";
       } catch (err) {
-        console.error(err);
-        status.innerText = "Câmera bloqueada pelo Safari.";
-        mBtn.style.display = "block"; // Mostra botão apenas se falhar
+        alert("Erro: Permita o acesso à câmera no Safari.");
+        document.getElementById('start-btn').style.display = "block";
       }
     }
-
-    // Auto-start com delay maior para o Safari permitir
-    window.addEventListener("load", () => {
-      setTimeout(iniciarScanner, 600);
-    });
   </script>
 </body>
 </html>
