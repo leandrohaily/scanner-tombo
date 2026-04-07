@@ -494,7 +494,7 @@
 
     function isCodigoValido(value) {
       const digits = onlyDigits(value);
-      return digits.length > 0 && digits.length <= 5;
+      return digits.length > 0 && digits.length <= 15;
     }
 
     function criarAudioContext() {
@@ -509,31 +509,25 @@
 
     async function unlockAudio() {
       if (audioUnlocked) return true;
-
       try {
         const ctx = criarAudioContext();
         if (ctx && ctx.state === "suspended") {
           await ctx.resume();
         }
-
         if (beepElement) {
           beepElement.muted = true;
           beepElement.currentTime = 0;
-
           const p = beepElement.play();
           if (p && typeof p.then === "function") {
             await p.catch(() => {});
           }
-
           beepElement.pause();
           beepElement.currentTime = 0;
           beepElement.muted = false;
         }
-
         audioUnlocked = true;
         return true;
       } catch (e) {
-        console.warn("Falha ao desbloquear áudio:", e);
         return false;
       }
     }
@@ -544,41 +538,10 @@
           await unlockAudio();
           beepElement.pause();
           beepElement.currentTime = 0;
-          const p = beepElement.play();
-          if (p && typeof p.then === "function") {
-            await p;
-          }
-          return;
+          await beepElement.play();
         }
       } catch (e) {
-        console.warn("Fallback para Web Audio:", e);
-      }
-
-      try {
-        const ctx = criarAudioContext();
-        if (!ctx) return;
-
-        if (ctx.state === "suspended") {
-          await ctx.resume();
-        }
-
-        const oscillator = ctx.createOscillator();
-        const gainNode = ctx.createGain();
-
-        oscillator.type = "sine";
-        oscillator.frequency.setValueAtTime(1100, ctx.currentTime);
-
-        gainNode.gain.setValueAtTime(0.0001, ctx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.01);
-        gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.16);
-
-        oscillator.connect(gainNode);
-        gainNode.connect(ctx.destination);
-
-        oscillator.start(ctx.currentTime);
-        oscillator.stop(ctx.currentTime + 0.16);
-      } catch (e) {
-        console.warn("Falha no beep fallback:", e);
+        console.warn("Beep falhou");
       }
     }
 
@@ -597,55 +560,27 @@
 
     function montarUrlRetorno(tombo = "") {
       const url = new URL(appReturnUrl);
-
       if (tombo) {
         url.searchParams.set("tombo", tombo);
       }
-
       url.searchParams.set("scanner_return", "1");
       return url.toString();
-    }
-
-    function salvarRetornoLocal(tombo = "") {
-      try {
-        if (tombo) {
-          sessionStorage.setItem("tomboLido", tombo);
-          localStorage.setItem("tomboLido", tombo);
-        }
-        sessionStorage.setItem("scannerRetornando", "1");
-        localStorage.setItem("scannerRetornando", "1");
-      } catch (e) {
-        console.warn("Não foi possível salvar retorno local:", e);
-      }
     }
 
     function executarRetorno(tombo = "") {
       if (retornoExecutado) return;
       retornoExecutado = true;
 
-      salvarRetornoLocal(tombo);
-
       const urlRetorno = montarUrlRetorno(tombo);
 
-      // Sempre volta direto com a URL correta
-      window.location.href = urlRetorno;
-    }
+      // --- SOLUÇÃO PARA EVITAR NOVAS ABAS NO SAFARI ---
+      // .replace() substitui a página atual no histórico e evita que o iOS abra uma nova aba externa.
+      window.location.replace(urlRetorno);
 
-    function returnToApp(decodedText) {
-      const tombo = onlyDigits(decodedText);
-
-      if (!tombo) {
-        jaLeu = false;
-        leituraEmAndamento = false;
-        retornoExecutado = false;
-        return;
-      }
-
-      executarRetorno(tombo);
-    }
-
-    function voltarParaApp() {
-      executarRetorno("");
+      // Fallback de segurança imediato caso o replace seja bloqueado
+      setTimeout(() => {
+        window.location.href = urlRetorno;
+      }, 50);
     }
 
     async function cancelarLeitura() {
@@ -657,7 +592,7 @@
       } catch (e) {
         console.warn("Erro ao parar câmera:", e);
       } finally {
-        voltarParaApp();
+        executarRetorno("");
       }
     }
 
@@ -672,8 +607,9 @@
       }
 
       setTimeout(() => {
-        returnToApp(decodedText);
-      }, 850);
+        const tombo = onlyDigits(decodedText);
+        executarRetorno(tombo);
+      }, 600);
     }
 
     async function onScanSuccess(decodedText) {
@@ -683,27 +619,19 @@
       jaLeu = true;
       leituraEmAndamento = true;
 
-      await playBeep();
+      playBeep();
       vibrateOk();
       showSuccess();
       await encerrarScannerComRetorno(decodedText);
     }
 
-    function onScanFailure(error) {
-      // console.debug("Falha na leitura:", error);
-    }
-
-    const qrboxWidth = 280;
-    const qrboxHeight = 110;
+    function onScanFailure(error) {}
 
     const config = {
-      fps: 10,
-      qrbox: { width: qrboxWidth, height: qrboxHeight },
+      fps: 15,
+      qrbox: { width: 280, height: 110 },
       aspectRatio: 1.7778,
       disableFlip: true,
-      experimentalFeatures: {
-        useBarCodeDetectorIfSupported: false
-      },
       formatsToSupport: [
         Html5QrcodeSupportedFormats.CODE_128,
         Html5QrcodeSupportedFormats.CODE_39
@@ -712,90 +640,21 @@
 
     async function iniciarScanner() {
       if (cameraIniciada || scannerIniciando) return;
-
       scannerIniciando = true;
 
       try {
-        if (typeof Html5Qrcode === "undefined") {
-          console.error("Biblioteca Html5Qrcode não carregou.");
-          return;
-        }
-
         if (!html5QrCode) {
           html5QrCode = new Html5Qrcode(readerElementId);
         }
 
-        try {
-          await html5QrCode.start(
-            { facingMode: "environment" },
-            config,
-            onScanSuccess,
-            onScanFailure
-          );
+        await html5QrCode.start(
+          { facingMode: "environment" },
+          config,
+          onScanSuccess,
+          onScanFailure
+        );
 
-          cameraIniciada = true;
-        } catch (erroFacingMode) {
-          console.warn("Falha com facingMode, tentando lista de câmeras...", erroFacingMode);
-
-          const cameras = await Html5Qrcode.getCameras();
-
-          if (!cameras || cameras.length === 0) {
-            console.error("Nenhuma câmera encontrada.");
-            return;
-          }
-
-          const cameraPreferida =
-            cameras.find(c => /back|rear|environment|traseira/i.test(c.label)) ||
-            cameras[0];
-
-          await html5QrCode.start(
-            cameraPreferida.id,
-            config,
-            onScanSuccess,
-            onScanFailure
-          );
-
-          cameraIniciada = true;
-        }
-
-        setTimeout(() => {
-          try {
-            const capabilities = html5QrCode.getRunningTrackCapabilities?.();
-            const settings = html5QrCode.getRunningTrackSettings?.();
-
-            if (capabilities && html5QrCode.applyVideoConstraints) {
-              const advanced = [];
-
-              if (capabilities.focusMode && Array.isArray(capabilities.focusMode)) {
-                if (capabilities.focusMode.includes("continuous")) {
-                  advanced.push({ focusMode: "continuous" });
-                }
-              }
-
-              if (
-                capabilities.zoom &&
-                typeof capabilities.zoom.max === "number" &&
-                capabilities.zoom.max >= 1.5
-              ) {
-                const zoomDesejado = Math.min(1.5, capabilities.zoom.max);
-                const zoomAtual = settings && settings.zoom ? settings.zoom : 1;
-
-                if (zoomDesejado > zoomAtual) {
-                  advanced.push({ zoom: zoomDesejado });
-                }
-              }
-
-              if (advanced.length > 0) {
-                html5QrCode.applyVideoConstraints({ advanced }).catch(err => {
-                  console.warn("Falha ao aplicar constraints:", err);
-                });
-              }
-            }
-          } catch (e) {
-            console.warn("Falha ao ajustar foco/zoom:", e);
-          }
-        }, 300);
-
+        cameraIniciada = true;
       } catch (e) {
         console.error("Erro ao iniciar scanner:", e);
       } finally {
@@ -807,7 +666,6 @@
       const tentar = () => unlockAudio().catch(() => {});
       document.addEventListener("touchstart", tentar, { once: true, passive: true });
       document.addEventListener("click", tentar, { once: true, passive: true });
-      document.addEventListener("pointerdown", tentar, { once: true, passive: true });
     }
 
     window.addEventListener("load", () => {
