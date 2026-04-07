@@ -44,6 +44,7 @@
     #reader { width: 100%; min-height: 310px; background: #000; border: none !important; }
     #reader video { width: 100% !important; height: 310px !important; object-fit: cover !important; border-radius: 22px; }
 
+    /* Esconde o desenho padrão da biblioteca */
     #reader__scan_region svg { display: none !important; }
 
     .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
@@ -52,16 +53,9 @@
       position: absolute; left: 50%; top: 50%;
       width: 82%; height: 160px; 
       transform: translate(-50%, -50%);
-      border: none !important; /* Remove retângulo branco interno */
+      border: none !important;
       box-shadow: 0 0 0 9999px rgba(0,0,0,0.42);
     }
-
-    /* Cantos da mira */
-    .corner { position: absolute; width: 24px; height: 24px; border: 4px solid #fff; z-index: 21; }
-    .tl { top: -2px; left: -2px; border-right: none; border-bottom: none; border-top-left-radius: 10px; }
-    .tr { top: -2px; right: -2px; border-left: none; border-bottom: none; border-top-right-radius: 10px; }
-    .bl { bottom: -2px; left: -2px; border-right: none; border-top: none; border-bottom-left-radius: 10px; }
-    .br { bottom: -2px; right: -2px; border-left: none; border-top: none; border-bottom-right-radius: 10px; }
 
     .laser-line {
       position: absolute; left: 5%; right: 5%; height: 3px;
@@ -71,11 +65,10 @@
     }
     @keyframes laserMove { 0%, 100% { top: 12%; } 50% { top: 88%; } }
 
-    /* Novo aviso abaixo da mira */
     .scan-hint {
       position: absolute;
       left: 50%;
-      top: calc(50% + 100px); /* Posiciona abaixo da scan-box de 160px */
+      top: calc(50% + 100px);
       transform: translateX(-50%);
       width: 90%;
       text-align: center;
@@ -113,8 +106,6 @@
       <div id="reader"></div>
       <div class="overlay">
         <div class="scan-box">
-          <div class="corner tl"></div><div class="corner tr"></div>
-          <div class="corner bl"></div><div class="corner br"></div>
           <div class="laser-line"></div>
         </div>
         <div class="scan-hint">Aproxime e mantenha o código alinhado na horizontal</div>
