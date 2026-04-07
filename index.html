@@ -7,8 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Invent JUS">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
   <script src="https://unpkg.com/html5-qrcode"></script>
 
@@ -22,8 +21,6 @@
       margin: 0;
       padding: 0;
       min-height: 100%;
-      width: 100%;
-      overflow-x: hidden;
       font-family: Arial, sans-serif;
       color: #fff;
       background:
@@ -35,7 +32,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+      padding: 14px;
     }
 
     .app {
@@ -46,7 +43,6 @@
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid rgba(255, 255, 255, 0.10);
       backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
       box-shadow:
         0 20px 50px rgba(0, 0, 0, 0.38),
         inset 0 1px 0 rgba(255,255,255,0.05);
@@ -67,8 +63,6 @@
       object-fit: contain;
       display: block;
       filter: drop-shadow(0 4px 12px rgba(0,0,0,0.28));
-      -webkit-user-drag: none;
-      user-select: none;
     }
 
     .title {
@@ -347,8 +341,6 @@
         inset 0 1px 0 rgba(255,255,255,0.10),
         0 0 0 1px rgba(255,255,255,0.06);
       transition: transform 0.15s ease, filter 0.15s ease;
-      -webkit-appearance: none;
-      appearance: none;
     }
 
     .cancel-btn:active {
@@ -458,12 +450,12 @@
       </div>
     </div>
 
-    <div class="reading-status" id="statusText">
+    <div class="reading-status">
       Lendo<span class="dots"></span>
     </div>
 
     <div class="cancel-wrap">
-      <button class="cancel-btn" type="button" onclick="cancelarLeitura()">✕ Cancelar</button>
+      <button class="cancel-btn" onclick="cancelarLeitura()">✕ Cancelar</button>
     </div>
   </div>
 
@@ -481,33 +473,20 @@
   </div>
 
   <script>
-  function getReturnUrl() {
-    const params = new URLSearchParams(window.location.search);
-    return params.get("returnUrl") || "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
-  }
-
-const appReturnUrl = getReturnUrl();
+    const appReturnUrl = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
     const readerElementId = "reader";
-
     let html5QrCode = null;
+
     let jaLeu = false;
     let cameraIniciada = false;
     let leituraEmAndamento = false;
     let scannerIniciando = false;
     let retornoExecutado = false;
-    let paginaSaindo = false;
 
     let audioUnlocked = false;
     let audioContext = null;
 
     const beepElement = document.getElementById("beepSound");
-    const statusText = document.getElementById("statusText");
-
-    function setStatus(texto) {
-      if (statusText) {
-        statusText.textContent = texto;
-      }
-    }
 
     function onlyDigits(value) {
       return (value || "").replace(/\D/g, "");
@@ -533,7 +512,6 @@ const appReturnUrl = getReturnUrl();
 
       try {
         const ctx = criarAudioContext();
-
         if (ctx && ctx.state === "suspended") {
           await ctx.resume();
         }
@@ -541,10 +519,12 @@ const appReturnUrl = getReturnUrl();
         if (beepElement) {
           beepElement.muted = true;
           beepElement.currentTime = 0;
+
           const p = beepElement.play();
           if (p && typeof p.then === "function") {
             await p.catch(() => {});
           }
+
           beepElement.pause();
           beepElement.currentTime = 0;
           beepElement.muted = false;
@@ -623,8 +603,6 @@ const appReturnUrl = getReturnUrl();
       }
 
       url.searchParams.set("scanner_return", "1");
-      url.searchParams.set("_ts", Date.now().toString());
-
       return url.toString();
     }
 
@@ -641,67 +619,16 @@ const appReturnUrl = getReturnUrl();
       }
     }
 
-    async function pararCameraSilenciosamente() {
-      try {
-        if (cameraIniciada && html5QrCode) {
-          await html5QrCode.stop();
-          cameraIniciada = false;
-        }
-      } catch (e) {
-        console.warn("Erro ao parar câmera:", e);
-      }
-
-      try {
-        if (html5QrCode) {
-          await html5QrCode.clear();
-        }
-      } catch (e) {
-        console.warn("Erro ao limpar scanner:", e);
-      }
-    }
-
-    function tentarFecharOuVoltar(urlRetorno) {
-      try {
-        if (window.opener && !window.opener.closed) {
-          window.location.replace(urlRetorno);
-          return;
-        }
-      } catch (e) {}
-
-      try {
-        if (document.referrer && document.referrer.includes("inventario-patrimonial-orzkxr.flutterflow.app")) {
-          window.location.replace(urlRetorno);
-          return;
-        }
-      } catch (e) {}
-
-      try {
-        window.location.replace(urlRetorno);
-      } catch (e) {
-        window.location.href = urlRetorno;
-      }
-    }
-
     function executarRetorno(tombo = "") {
       if (retornoExecutado) return;
       retornoExecutado = true;
-      paginaSaindo = true;
 
       salvarRetornoLocal(tombo);
 
       const urlRetorno = montarUrlRetorno(tombo);
 
-      try {
-        window.location.replace(urlRetorno);
-
-        setTimeout(() => {
-          tentarFecharOuVoltar(urlRetorno);
-        }, 250);
-
-      } catch (e) {
-        console.warn("Erro no retorno. Aplicando fallback.", e);
-        tentarFecharOuVoltar(urlRetorno);
-      }
+      // Sempre volta direto com a URL correta
+      window.location.href = urlRetorno;
     }
 
     function returnToApp(decodedText) {
@@ -711,7 +638,6 @@ const appReturnUrl = getReturnUrl();
         jaLeu = false;
         leituraEmAndamento = false;
         retornoExecutado = false;
-        paginaSaindo = false;
         return;
       }
 
@@ -723,13 +649,27 @@ const appReturnUrl = getReturnUrl();
     }
 
     async function cancelarLeitura() {
-      setStatus("Cancelando...");
-      await pararCameraSilenciosamente();
-      voltarParaApp();
+      try {
+        if (cameraIniciada && html5QrCode) {
+          await html5QrCode.stop();
+          cameraIniciada = false;
+        }
+      } catch (e) {
+        console.warn("Erro ao parar câmera:", e);
+      } finally {
+        voltarParaApp();
+      }
     }
 
     async function encerrarScannerComRetorno(decodedText) {
-      await pararCameraSilenciosamente();
+      try {
+        if (cameraIniciada && html5QrCode) {
+          await html5QrCode.stop();
+          cameraIniciada = false;
+        }
+      } catch (e) {
+        console.warn("Erro ao encerrar scanner:", e);
+      }
 
       setTimeout(() => {
         returnToApp(decodedText);
@@ -737,13 +677,12 @@ const appReturnUrl = getReturnUrl();
     }
 
     async function onScanSuccess(decodedText) {
-      if (jaLeu || leituraEmAndamento || paginaSaindo) return;
+      if (jaLeu || leituraEmAndamento) return;
       if (!isCodigoValido(decodedText)) return;
 
       jaLeu = true;
       leituraEmAndamento = true;
 
-      setStatus("Código identificado");
       await playBeep();
       vibrateOk();
       showSuccess();
@@ -751,6 +690,7 @@ const appReturnUrl = getReturnUrl();
     }
 
     function onScanFailure(error) {
+      // console.debug("Falha na leitura:", error);
     }
 
     const qrboxWidth = 280;
@@ -766,30 +706,18 @@ const appReturnUrl = getReturnUrl();
       },
       formatsToSupport: [
         Html5QrcodeSupportedFormats.CODE_128,
-        Html5QrcodeSupportedFormats.CODE_39,
-        Html5QrcodeSupportedFormats.EAN_13,
-        Html5QrcodeSupportedFormats.EAN_8,
-        Html5QrcodeSupportedFormats.UPC_A,
-        Html5QrcodeSupportedFormats.UPC_E
+        Html5QrcodeSupportedFormats.CODE_39
       ]
     };
 
     async function iniciarScanner() {
-      if (cameraIniciada || scannerIniciando || paginaSaindo) return;
+      if (cameraIniciada || scannerIniciando) return;
 
       scannerIniciando = true;
-      setStatus("Abrindo câmera...");
 
       try {
         if (typeof Html5Qrcode === "undefined") {
-          setStatus("Falha ao carregar biblioteca");
           console.error("Biblioteca Html5Qrcode não carregou.");
-          return;
-        }
-
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          setStatus("Câmera não suportada neste navegador");
-          console.error("getUserMedia não suportado.");
           return;
         }
 
@@ -799,23 +727,19 @@ const appReturnUrl = getReturnUrl();
 
         try {
           await html5QrCode.start(
-            {
-              facingMode: { ideal: "environment" }
-            },
+            { facingMode: "environment" },
             config,
             onScanSuccess,
             onScanFailure
           );
 
           cameraIniciada = true;
-          setStatus("Lendo código...");
         } catch (erroFacingMode) {
-          console.warn("Falha com facingMode. Tentando lista de câmeras...", erroFacingMode);
+          console.warn("Falha com facingMode, tentando lista de câmeras...", erroFacingMode);
 
           const cameras = await Html5Qrcode.getCameras();
 
           if (!cameras || cameras.length === 0) {
-            setStatus("Nenhuma câmera encontrada");
             console.error("Nenhuma câmera encontrada.");
             return;
           }
@@ -832,7 +756,6 @@ const appReturnUrl = getReturnUrl();
           );
 
           cameraIniciada = true;
-          setStatus("Lendo código...");
         }
 
         setTimeout(() => {
@@ -871,11 +794,10 @@ const appReturnUrl = getReturnUrl();
           } catch (e) {
             console.warn("Falha ao ajustar foco/zoom:", e);
           }
-        }, 500);
+        }, 300);
 
       } catch (e) {
         console.error("Erro ao iniciar scanner:", e);
-        setStatus("Não foi possível abrir a câmera");
       } finally {
         scannerIniciando = false;
       }
@@ -888,38 +810,9 @@ const appReturnUrl = getReturnUrl();
       document.addEventListener("pointerdown", tentar, { once: true, passive: true });
     }
 
-    function reativarScannerSeNecessario() {
-      if (!cameraIniciada && !jaLeu && !leituraEmAndamento && !paginaSaindo) {
-        iniciarScanner();
-      }
-    }
-
     window.addEventListener("load", () => {
       prepararAudioSemBloquearCamera();
-
-      setTimeout(() => {
-        iniciarScanner();
-      }, 250);
-    });
-
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible" && !paginaSaindo) {
-        setTimeout(() => {
-          reativarScannerSeNecessario();
-        }, 250);
-      }
-    });
-
-    window.addEventListener("pageshow", (event) => {
-      if (event.persisted && !paginaSaindo) {
-        setTimeout(() => {
-          reativarScannerSeNecessario();
-        }, 250);
-      }
-    });
-
-    window.addEventListener("beforeunload", () => {
-      paginaSaindo = true;
+      iniciarScanner();
     });
   </script>
 </body>
