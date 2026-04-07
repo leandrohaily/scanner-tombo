@@ -10,10 +10,11 @@
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html, body {
-      margin: 0; padding: 0; min-height: 100%;
+      margin: 0; padding: 0; height: 100%;
       font-family: Arial, sans-serif; color: #fff;
       background: radial-gradient(circle at top, rgba(64, 110, 255, 0.20), transparent 34%),
                   linear-gradient(180deg, #030d20 0%, #071a3b 45%, #041127 100%);
+      overflow: hidden;
     }
     body { display: flex; align-items: center; justify-content: center; padding: 14px; }
     .app {
@@ -26,33 +27,41 @@
     
     .scanner-shell {
       position: relative; overflow: hidden; border-radius: 22px;
-      background: #000; min-height: 310px;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+      background: #000; height: 300px;
+      display: flex; align-items: center; justify-content: center;
     }
-    #reader { width: 100%; min-height: 310px; background: #000; }
-    #reader video { object-fit: cover !important; border-radius: 22px; }
+    #reader { width: 100%; height: 100%; background: #000; }
+    #reader video { object-fit: cover !important; height: 300px !important; border-radius: 22px; }
 
-    .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
+    /* Botão de Ativação Centralizado */
+    #start-btn {
+      position: absolute; z-index: 50;
+      background: #34c759; color: white; border: none;
+      padding: 15px 30px; border-radius: 12px;
+      font-weight: bold; font-size: 16px; cursor: pointer;
+      box-shadow: 0 4px 15px rgba(52, 199, 89, 0.4);
+    }
+
+    .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 20; display: none; }
     .scan-box {
       position: absolute; left: 50%; top: 50%;
-      width: 85%; max-width: 320px; height: 160px; 
-      transform: translate(-50%, -50%);
+      width: 85%; height: 150px; transform: translate(-50%, -50%);
       border: 2px solid rgba(255,255,255,0.95); border-radius: 12px;
       box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
     }
-    .corner { position: absolute; width: 24px; height: 24px; border: 4px solid #fff; }
-    .tl { top: -2px; left: -2px; border-right: none; border-bottom: none; border-top-left-radius: 10px; }
-    .tr { top: -2px; right: -2px; border-left: none; border-bottom: none; border-top-right-radius: 10px; }
-    .bl { bottom: -2px; left: -2px; border-right: none; border-top: none; border-bottom-left-radius: 10px; }
-    .br { bottom: -2px; right: -2px; border-left: none; border-top: none; border-bottom-right-radius: 10px; }
+    .corner { position: absolute; width: 20px; height: 20px; border: 4px solid #fff; }
+    .tl { top: -2px; left: -2px; border-right: none; border-bottom: none; border-top-left-radius: 8px; }
+    .tr { top: -2px; right: -2px; border-left: none; border-bottom: none; border-top-right-radius: 8px; }
+    .bl { bottom: -2px; left: -2px; border-right: none; border-top: none; border-bottom-left-radius: 8px; }
+    .br { bottom: -2px; right: -2px; border-left: none; border-top: none; border-bottom-right-radius: 8px; }
     
     .laser-line {
       position: absolute; left: 5%; right: 5%; height: 2px; background: #ff4747;
-      box-shadow: 0 0 10px #ff4747; animation: laserMove 2.5s ease-in-out infinite;
+      box-shadow: 0 0 10px #ff4747; animation: laserMove 2s ease-in-out infinite;
     }
-    @keyframes laserMove { 0% { top: 10%; } 50% { top: 90%; } 100% { top: 10%; } }
+    @keyframes laserMove { 0%, 100% { top: 15%; } 50% { top: 85%; } }
 
-    .reading-status { margin-top: 14px; text-align: center; font-size: 15px; font-weight: 600; }
+    .reading-status { margin-top: 14px; text-align: center; font-size: 14px; font-weight: 600; min-height: 1.2em; }
     .cancel-wrap { margin-top: 16px; display: flex; justify-content: center; }
     .cancel-btn {
       min-width: 180px; height: 48px; border: none; border-radius: 14px;
@@ -60,7 +69,7 @@
       color: #fff; font-weight: 700; cursor: pointer;
     }
     #successOverlay {
-      position: fixed; inset: 0; background: rgba(0, 168, 89, 0.96);
+      position: fixed; inset: 0; background: rgba(0, 168, 89, 0.98);
       display: none; align-items: center; justify-content: center; z-index: 9999;
     }
   </style>
@@ -69,11 +78,12 @@
 
   <div class="app">
     <div class="logo-wrap"><img src="logo-inventjus.png" alt="Invent JUS"></div>
-    <div class="reading-status">Iniciando câmera...</div>
+    <div class="reading-status" id="status">Toque no botão para escanear</div>
 
     <div class="scanner-shell">
+      <button id="start-btn" onclick="iniciarScanner()">ABRIR CÂMERA</button>
       <div id="reader"></div>
-      <div class="overlay">
+      <div class="overlay" id="overlay">
         <div class="scan-box">
           <div class="corner tl"></div><div class="corner tr"></div>
           <div class="corner bl"></div><div class="corner br"></div>
@@ -88,10 +98,7 @@
   </div>
 
   <div id="successOverlay">
-    <div style="text-align:center">
-      <div style="font-size:72px">✔</div>
-      <div style="font-size:22px; font-weight:800">Tombo Lido!</div>
-    </div>
+    <div style="text-align:center"><div style="font-size:70px">✔</div><b>LIDO!</b></div>
   </div>
 
   <script>
@@ -110,59 +117,48 @@
       url.searchParams.set("t", Date.now());
 
       if (codigo) document.getElementById("successOverlay").style.display = "flex";
-      setTimeout(() => { window.top.location.replace(url.toString()); }, codigo ? 400 : 0);
-    }
-
-    function onScanSuccess(decodedText) {
-      if (processando) return;
-      if (navigator.vibrate) navigator.vibrate(100);
-      retornarAoApp(decodedText);
+      window.top.location.replace(url.toString());
     }
 
     async function iniciarScanner() {
-      const statusText = document.querySelector('.reading-status');
+      const btn = document.getElementById('start-btn');
+      const status = document.getElementById('status');
+      const overlay = document.getElementById('overlay');
+      
+      btn.style.display = "none";
+      status.innerText = "Iniciando...";
+
       html5QrCode = new Html5Qrcode("reader");
 
       const config = {
         fps: 25,
-        qrbox: { width: 300, height: 160 },
-        aspectRatio: 1.0,
-        disableFlip: true,
+        qrbox: { width: 300, height: 150 },
+        aspectRatio: 1.0
       };
 
-      // TENTATIVA 1: Alta Definição (Melhor para ler de longe)
       try {
-        await html5QrCode.start(
-          { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
-          config,
-          onScanSuccess
-        );
-        statusText.innerText = "Lendo Tombo...";
-        tentarFocoContinuo();
-      } catch (err) {
-        console.warn("Falha no modo HD, tentando modo padrão...");
+        // Chamada direta disparada pelo CLIQUE do usuário (Safari adora isso)
+        await html5QrCode.start({ facingMode: "environment" }, config, (text) => {
+          if (!processando) {
+            if (navigator.vibrate) navigator.vibrate(100);
+            retornarAoApp(text);
+          }
+        });
         
-        // TENTATIVA 2: Modo Padrão (Compatível com todos os iPhones)
-        try {
-          await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess);
-          statusText.innerText = "Lendo Tombo (Modo Compatível)";
-          tentarFocoContinuo();
-        } catch (err2) {
-          statusText.innerText = "Erro: Sem permissão de câmera.";
-        }
-      }
-    }
+        status.innerText = "Scanner Ativo";
+        overlay.style.display = "block";
 
-    async function tentarFocoContinuo() {
-      try {
+        // Tenta melhorar o foco após abrir
         const track = html5QrCode.getRunningTrack();
         if (track && track.getCapabilities().focusMode?.includes('continuous')) {
-          await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+          track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
         }
-      } catch (e) { console.log("Foco contínuo não suportado."); }
+      } catch (err) {
+        status.innerText = "Erro ao acessar câmera.";
+        btn.style.display = "block";
+        btn.innerText = "TENTAR NOVAMENTE";
+      }
     }
-
-    window.addEventListener("load", () => { setTimeout(iniciarScanner, 400); });
   </script>
 </body>
 </html>
