@@ -49,12 +49,13 @@
 
     .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
 
+    /* ALTERAÇÃO AQUI: Removido o box-shadow que criava o retângulo escuro/largo */
     .scan-box {
       position: absolute; left: 50%; top: 50%;
       width: 82%; height: 160px; 
       transform: translate(-50%, -50%);
       border: none !important;
-      box-shadow: 0 0 0 9999px rgba(0,0,0,0.42);
+      box-shadow: none !important; /* Remove o retângulo de sombra */
     }
 
     .laser-line {
@@ -74,7 +75,7 @@
       text-align: center;
       font-size: 12px;
       color: rgba(255,255,255,0.9);
-      text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8); /* Aumentado o contraste do texto */
       z-index: 23;
     }
 
@@ -83,94 +84,4 @@
     .cancel-btn {
       display: block; margin: 16px auto 0; min-width: 180px; height: 48px;
       border: none; border-radius: 14px; background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%);
-      color: #fff; font-weight: 700; cursor: pointer; box-shadow: 0 8px 18px rgba(0,0,0,0.22);
-    }
-
-    #successOverlay {
-      position: fixed; inset: 0; background: rgba(0, 168, 89, 0.96);
-      display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="app">
-    <div class="logo-wrap">
-      <img src="logo-inventjus.png" alt="Invent JUS">
-    </div>
-
-    <div class="title">Leitor de código de barras</div>
-    <div class="subtitle">Centralize a etiqueta patrimonial dentro da área de leitura.</div>
-
-    <div class="scanner-shell">
-      <div id="reader"></div>
-      <div class="overlay">
-        <div class="scan-box">
-          <div class="laser-line"></div>
-        </div>
-        <div class="scan-hint">Aproxime e mantenha o código alinhado na horizontal</div>
-      </div>
-    </div>
-
-    <div class="reading-status" id="status-text">Iniciando...</div>
-
-    <button class="cancel-btn" onclick="retornarAoApp('')">✕ Cancelar</button>
-  </div>
-
-  <div id="successOverlay">
-    <div style="font-size:72px">✔</div>
-    <div style="font-size:22px; font-weight:800">TOMBO LIDO</div>
-    <div style="font-size:14px; opacity:0.8">Retornando ao sistema...</div>
-  </div>
-
-  <script>
-    const APP_URL = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
-    let html5QrCode = null;
-    let isReturning = false;
-
-    async function retornarAoApp(codigo = "") {
-      if (isReturning) return;
-      isReturning = true;
-
-      const url = new URL(APP_URL);
-      if (codigo) {
-        url.searchParams.set("tombo", codigo.replace(/\D/g, ""));
-        document.getElementById("successOverlay").style.display = "flex";
-      }
-      url.searchParams.set("scanner_return", "1");
-      url.searchParams.set("t", Date.now());
-
-      if (html5QrCode) {
-        html5QrCode.stop().catch(() => {});
-      }
-
-      window.top.location.replace(url.toString());
-    }
-
-    function iniciarScanner() {
-      html5QrCode = new Html5Qrcode("reader");
-      
-      const config = { 
-        fps: 25, 
-        qrbox: { width: 300, height: 160 }, 
-        aspectRatio: 1.0 
-      };
-      
-      html5QrCode.start({ facingMode: "environment" }, config, (text) => {
-        if (navigator.vibrate) navigator.vibrate(100);
-        retornarAoApp(text);
-      }).then(() => {
-        document.getElementById('status-text').innerText = "Lendo...";
-      }).catch(() => {
-        document.getElementById('status-text').innerText = "Erro ao acessar câmera.";
-      });
-    }
-
-    if (document.readyState === "complete" || document.readyState === "interactive") {
-      iniciarScanner();
-    } else {
-      window.addEventListener("load", iniciarScanner);
-    }
-  </script>
-</body>
-</html>
+      color: #fff; font-weight: 700; cursor: pointer
