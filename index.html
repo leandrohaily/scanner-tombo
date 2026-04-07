@@ -12,7 +12,6 @@
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
-    /* --- CSS ESTÉTICO DO SEU MODELO --- */
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     html, body {
@@ -49,14 +48,17 @@
     #reader { width: 100%; min-height: 310px; background: #000; border: none !important; }
     #reader video { width: 100% !important; height: 310px !important; object-fit: cover !important; border-radius: 22px; }
 
-    /* --- MIRA E LASER --- */
     .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
+    
+    /* --- ÁREA DE CAPTURA AMPLIADA (160px de altura) --- */
     .scan-box {
-      position: absolute; left: 50%; top: 50%; width: 78%; height: 120px;
+      position: absolute; left: 50%; top: 50%; 
+      width: 82%; height: 160px; /* Aumentado de 120px para 160px */
       transform: translate(-50%, -50%);
       border: 2px solid rgba(255,255,255,0.95); border-radius: 12px;
       box-shadow: 0 0 0 9999px rgba(0,0,0,0.42);
     }
+
     .corner { position: absolute; width: 24px; height: 24px; border: 4px solid #fff; z-index: 3; }
     .tl { top: -2px; left: -2px; border-right: none; border-bottom: none; border-top-left-radius: 10px; }
     .tr { top: -2px; right: -2px; border-left: none; border-bottom: none; border-top-right-radius: 10px; }
@@ -68,9 +70,10 @@
       background: #ff4747; box-shadow: 0 0 12px #ff4747;
       animation: laserMove 2.2s ease-in-out infinite; z-index: 2;
     }
-    @keyframes laserMove { 0% { top: 12%; } 50% { top: 88%; } 100% { top: 12%; } }
+    @keyframes laserMove { 0% { top: 10%; } 50% { top: 90%; } 100% { top: 10%; } }
 
     .reading-status { margin-top: 14px; text-align: center; font-size: 15px; font-weight: 600; }
+    
     .cancel-btn {
       min-width: 180px; height: 48px; border: none; border-radius: 14px;
       background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%);
@@ -91,7 +94,7 @@
     </div>
 
     <div class="title">Leitor de código de barras</div>
-    <div class="subtitle">Centralize a etiqueta patrimonial dentro da área de leitura.</div>
+    <div class="subtitle">Aproxime a etiqueta patrimonial da área de leitura.</div>
 
     <div class="scanner-shell">
       <div id="reader"></div>
@@ -104,7 +107,7 @@
       </div>
     </div>
 
-    <div class="reading-status">Lendo...</div>
+    <div class="reading-status">Iniciando câmera...</div>
 
     <button class="cancel-btn" onclick="retornarAoApp('')">✕ Cancelar</button>
   </div>
@@ -112,8 +115,7 @@
   <div id="successOverlay">
     <div style="text-align:center">
       <div style="font-size:72px">✔</div>
-      <div style="font-size:22px; font-weight:800">CÓDIGO LIDO</div>
-      <div style="font-size:14px; opacity:0.8">Retornando ao inventário...</div>
+      <div style="font-size:22px; font-weight:800">LIDO COM SUCESSO</div>
     </div>
   </div>
 
@@ -126,7 +128,6 @@
       if (isReturning) return;
       isReturning = true;
 
-      // Se leu algo, mostra o overlay verde na hora ( feedback instantâneo)
       if (codigo) document.getElementById("successOverlay").style.display = "flex";
 
       const url = new URL(APP_URL);
@@ -134,12 +135,10 @@
       url.searchParams.set("scanner_return", "1");
       url.searchParams.set("t", Date.now());
 
-      // Tenta parar a câmera sem travar a navegação (async)
       if (html5QrCode) {
         html5QrCode.stop().catch(() => {});
       }
 
-      // Redirecionamento de alta prioridade
       window.top.location.replace(url.toString());
     }
 
@@ -152,25 +151,28 @@
     function iniciarScanner() {
       html5QrCode = new Html5Qrcode("reader");
       
-      // Configurações focadas em ABERTURA RÁPIDA
       const config = { 
         fps: 25, 
-        qrbox: { width: 280, height: 110 },
-        aspectRatio: 1.0 // Proporção quadrada é a mais rápida para o sensor iniciar
+        // qrbox ampliado para capturar em uma área maior
+        qrbox: { width: 300, height: 160 }, 
+        aspectRatio: 1.0 
       };
 
       html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
+        .then(() => {
+          document.querySelector('.reading-status').innerText = "Lendo...";
+        })
         .catch(err => {
-          console.error("Erro ao iniciar:", err);
-          document.querySelector('.reading-status').innerText = "Erro ao acessar câmera.";
+          console.error(err);
+          document.querySelector('.reading-status').innerText = "Erro ao carregar câmera.";
         });
     }
 
-    // Inicialização imediata
+    // Inicialização otimizada
     if (document.readyState === "complete" || document.readyState === "interactive") {
-      setTimeout(iniciarScanner, 100);
+      setTimeout(iniciarScanner, 150);
     } else {
-      window.addEventListener("load", () => setTimeout(iniciarScanner, 100));
+      window.addEventListener("load", () => setTimeout(iniciarScanner, 150));
     }
   </script>
 </body>
