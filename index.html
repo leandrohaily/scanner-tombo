@@ -8,62 +8,76 @@
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { margin: 0; background: #000; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; color: white; }
-    .container { width: 90%; max-width: 400px; text-align: center; }
-    #reader { width: 100%; border-radius: 20px; overflow: hidden; background: #000; }
-    .btn-cancel { margin-top: 20px; width: 100%; padding: 15px; border: none; border-radius: 12px; background: #ff3b30; color: white; font-weight: bold; font-size: 16px; }
-    #msg { position: fixed; inset: 0; background: #34c759; display: none; align-items: center; justify-content: center; z-index: 99; font-size: 24px; font-weight: bold; }
+    body { margin: 0; background: #000; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; color: white; overflow: hidden; }
+    .container { width: 90%; max-width: 400px; text-align: center; z-index: 5; }
+    #reader { width: 100%; border-radius: 24px; overflow: hidden; background: #000; border: 2px solid rgba(255,255,255,0.1); }
+    .btn-cancel { margin-top: 25px; width: 100%; padding: 16px; border: none; border-radius: 16px; background: #ff3b30; color: white; font-weight: bold; font-size: 16px; box-shadow: 0 4px 15px rgba(255,59,48,0.3); }
+    #success { position: fixed; inset: 0; background: #34c759; display: none; align-items: center; justify-content: center; z-index: 99; font-size: 28px; font-weight: bold; flex-direction: column; }
   </style>
 </head>
 <body>
   <div class="container">
+    <div style="margin-bottom: 20px; font-weight: bold; opacity: 0.8;">SCANNER PATRIMONIAL</div>
     <div id="reader"></div>
-    <button class="btn-cancel" onclick="enviarRetorno('')">CANCELAR</button>
+    <button class="btn-cancel" onclick="retornarAoApp('')">✕ CANCELAR</button>
   </div>
-  <div id="msg">LIDO!</div>
+  
+  <div id="success">
+    <span>✔</span>
+    <div style="font-size: 18px; margin-top: 10px;">TOMBO LIDO</div>
+  </div>
 
   <script>
-    const finalURL = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
-    let scanner = null;
+    const APP_URL = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariados";
+    let html5QrCode = null;
     let finalizado = false;
 
-    function enviarRetorno(valor) {
+    async function retornarAoApp(codigo) {
       if (finalizado) return;
       finalizado = true;
 
-      if (scanner) {
-        scanner.stop().catch(() => {});
+      // 1. Para o scanner imediatamente para liberar a CPU do iPhone
+      if (html5QrCode) {
+        try { await html5QrCode.stop(); } catch (e) { console.log(e); }
       }
 
-      const url = new URL(finalURL);
-      if (valor) url.searchParams.set("tombo", valor);
+      // 2. Prepara a URL com cache-buster (t=timestamp)
+      const url = new URL(APP_URL);
+      if (codigo) url.searchParams.set("tombo", codigo);
       url.searchParams.set("scanner_return", "1");
-      // Timestamp para evitar que o Safari use o cache da página anterior
-      url.searchParams.set("cache", Date.now());
+      url.searchParams.set("t", Date.now());
 
-      if (valor) document.getElementById("msg").style.display = "flex";
+      if (codigo) document.getElementById("success").style.display = "flex";
 
-      // O SEGREDO: Usar o replace no window.top para o Safari entender 
-      // que deve reaproveitar a janela de onde veio o foco.
+      // 3. O PULO DO GATO PARA O SAFARI:
+      // Usamos replace no nível mais alto (top) para garantir que a aba atual seja sobrescrita
+      // Isso evita que o Safari empilhe abas no modo "App de Tela de Início"
       setTimeout(() => {
         window.top.location.replace(url.toString());
-      }, valor ? 400 : 0);
+      }, codigo ? 500 : 0);
     }
 
-    function onScanSuccess(text) {
-      const tombo = text.replace(/\D/g, "");
+    function onScanSuccess(decodedText) {
+      const tombo = decodedText.replace(/\D/g, "");
       if (tombo && !finalizado) {
-        enviarRetorno(tombo);
+        if (navigator.vibrate) navigator.vibrate(200);
+        retornarAoApp(tombo);
       }
     }
 
     window.onload = () => {
-      scanner = new Html5Qrcode("reader");
-      scanner.start(
-        { facingMode: "environment" },
-        { fps: 20, qrbox: { width: 250, height: 150 } },
-        onScanSuccess
-      ).catch(e => console.error(e));
+      html5QrCode = new Html5Qrcode("reader");
+      const config = { 
+        fps: 20, 
+        qrbox: { width: 250, height: 120 },
+        aspectRatio: 1.777
+      };
+      
+      html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
+        .catch(() => {
+          // Fallback caso falhe a câmera traseira
+          html5QrCode.start({ facingMode: "user" }, config, onScanSuccess);
+        });
     };
   </script>
 </body>
