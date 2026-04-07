@@ -23,8 +23,6 @@
     }
     .logo-wrap { display: flex; justify-content: center; margin-bottom: 10px; }
     .logo-wrap img { max-width: 210px; height: auto; }
-    .title { text-align: center; font-size: 17px; font-weight: 700; margin-bottom: 6px; }
-    .subtitle { text-align: center; font-size: 13px; color: rgba(255,255,255,0.82); margin-bottom: 16px; }
     
     .scanner-shell {
       position: relative; overflow: hidden; border-radius: 22px;
@@ -71,8 +69,7 @@
 
   <div class="app">
     <div class="logo-wrap"><img src="logo-inventjus.png" alt="Invent JUS"></div>
-    <div class="title">Leitor de código de barras</div>
-    <div class="subtitle">Aproxime a etiqueta no retângulo abaixo.</div>
+    <div class="reading-status">Iniciando câmera...</div>
 
     <div class="scanner-shell">
       <div id="reader"></div>
@@ -85,10 +82,8 @@
       </div>
     </div>
 
-    <div class="reading-status">Aguardando câmera...</div>
-
     <div class="cancel-wrap">
-      <button class="cancel-btn" onclick="cancelarLeitura()">✕ Cancelar</button>
+      <button class="cancel-btn" onclick="retornarAoApp('')">✕ Cancelar</button>
     </div>
   </div>
 
@@ -124,8 +119,6 @@
       retornarAoApp(decodedText);
     }
 
-    async function cancelarLeitura() { await retornarAoApp(""); }
-
     async function iniciarScanner() {
       const statusText = document.querySelector('.reading-status');
       html5QrCode = new Html5Qrcode("reader");
@@ -133,41 +126,43 @@
       const config = {
         fps: 25,
         qrbox: { width: 300, height: 160 },
-        aspectRatio: 1.77,
-        // DESATIVADO para forçar o algoritmo a trabalhar com a imagem bruta HD
+        aspectRatio: 1.0,
         disableFlip: true,
       };
 
-      // CONSTRAINTS OTIMIZADAS PARA FOCO E RESOLUÇÃO
-      const videoConstraints = {
-        facingMode: "environment",
-        // Força uma resolução maior para o scanner "ver" as barras finas de longe
-        width: { min: 1280, ideal: 1920 },
-        height: { min: 720, ideal: 1080 }
-      };
-
+      // TENTATIVA 1: Alta Definição (Melhor para ler de longe)
       try {
-        await html5QrCode.start(videoConstraints, config, onScanSuccess);
+        await html5QrCode.start(
+          { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+          config,
+          onScanSuccess
+        );
         statusText.innerText = "Lendo Tombo...";
-
-        // AJUSTE DE FOCO CONTÍNUO (Advanced Constraints)
-        const track = html5QrCode.getRunningTrack();
-        const capabilities = track.getCapabilities();
-
-        // Tenta ativar o foco contínuo se o navegador permitir
-        if (capabilities.focusMode && capabilities.focusMode.includes('continuous')) {
-          await track.applyConstraints({
-            advanced: [{ focusMode: 'continuous' }]
-          });
-        }
-        
+        tentarFocoContinuo();
       } catch (err) {
-        console.error(err);
-        statusText.innerText = "Erro ao acessar câmera.";
+        console.warn("Falha no modo HD, tentando modo padrão...");
+        
+        // TENTATIVA 2: Modo Padrão (Compatível com todos os iPhones)
+        try {
+          await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess);
+          statusText.innerText = "Lendo Tombo (Modo Compatível)";
+          tentarFocoContinuo();
+        } catch (err2) {
+          statusText.innerText = "Erro: Sem permissão de câmera.";
+        }
       }
     }
 
-    window.addEventListener("load", () => { setTimeout(iniciarScanner, 300); });
+    async function tentarFocoContinuo() {
+      try {
+        const track = html5QrCode.getRunningTrack();
+        if (track && track.getCapabilities().focusMode?.includes('continuous')) {
+          await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+        }
+      } catch (e) { console.log("Foco contínuo não suportado."); }
+    }
+
+    window.addEventListener("load", () => { setTimeout(iniciarScanner, 400); });
   </script>
 </body>
 </html>
