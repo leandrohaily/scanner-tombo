@@ -83,6 +83,8 @@
       z-index: 23;
       opacity: 0;
       transition: opacity 0.5s;
+    
+      white-space: nowrap; /* 👈 impede quebra de linha */
     }
 
     .reading-status { margin-top: 14px; text-align: center; font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.92); }
@@ -98,7 +100,7 @@
       background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%);
       color: #fff;
       font-weight: 700;
-      font-size: 18px;
+      font-size: 17px;
       cursor: pointer;
       box-shadow: 0 8px 18px rgba(0,0,0,0.22);
     }
