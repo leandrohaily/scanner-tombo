@@ -211,7 +211,9 @@
       Iniciando...
     </div>
 
-    <button class="cancel-btn" onclick="retornarAoApp(null)">Cancelar</button>
+    <button class="cancel-btn" onclick="retornarAoApp('cancelado')">
+      Cancelar
+    </button>
   </div>
 
   <div id="successOverlay">
@@ -256,7 +258,8 @@
 
       isReturning = true;
 
-      if (codigo) {
+      if (codigo && codigo !== 'cancelado') {
+
         document.getElementById("successOverlay").style.display = "flex";
 
         playSyntheticBeep();
@@ -268,10 +271,18 @@
 
       const url = new URL(APP_URL);
 
-      if (codigo) {
+      if (codigo === 'cancelado') {
+
+        url.searchParams.set("tombo", "cancelado");
+
+      } else if (codigo) {
+
         url.searchParams.set("tombo", codigo.replace(/\D/g, ""));
+
       } else {
+
         url.searchParams.set("tombo", "");
+
       }
 
       url.searchParams.set("scanner_return", "1");
@@ -285,7 +296,7 @@
 
       setTimeout(() => {
         window.location.assign(url.toString());
-      }, codigo ? 400 : 0);
+      }, codigo && codigo !== 'cancelado' ? 400 : 0);
     }
 
     function iniciarScanner() {
