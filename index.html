@@ -153,9 +153,7 @@
       Iniciando...
     </div>
 
-    <button class="cancel-btn" onclick="retornarAoApp(null)">
-      Cancelar
-    </button>
+    <button class="cancel-btn" onclick="retornarAoApp('')">Cancelar</button>
   </div>
 
   <div id="successOverlay">
@@ -212,12 +210,7 @@
 
       const url = new URL(APP_URL);
 
-      if (codigo !== null) {
-        url.searchParams.set(
-          "tombo",
-          codigo ? codigo.replace(/\D/g, "") : ""
-        );
-      }
+     if (codigo) url.searchParams.set("tombo", codigo.replace(/\D/g, ""));
 
       url.searchParams.set("scanner_return", "1");
       url.searchParams.set("t", Date.now());
