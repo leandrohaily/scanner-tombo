@@ -20,49 +20,51 @@
       color: #fff;
       background: #030d20 !important;
       overflow: hidden !important;
+      /* Remove qualquer tentativa de zoom/escala nativa do iOS */
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
     }
 
     body {
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-    }
-
-    /* Container base ocupa a tela inteira física */
-    .app {
-      width: 100% !important;
-      height: 100% !important;
-      min-height: 100dvh !important;
-      padding: max(20px, env(safe-area-inset-top)) 16px max(20px, env(safe-area-inset-bottom));
-      display: flex !important;
-      flex-direction: column !important;
-      justify-content: center !important;
-      align-items: center !important;
+      display: grid !important;
+      place-items: center !important;
       background: radial-gradient(circle at top, rgba(64, 110, 255, 0.20), transparent 34%),
                   linear-gradient(180deg, #030d20 0%, #071a3b 45%, #041127 100%) !important;
     }
 
-    /* Em telas normais/PC age como card; em celulares expande para as bordas obrigando o preenchimento */
+    .app {
+      /* Garante o preenchimento lateral forçado caso o Safari tente usar uma largura virtual menor */
+      width: 100vw !important;
+      min-width: 100% !important;
+      height: 100dvh !important;
+      padding: max(20px, env(safe-area-inset-top)) 24px max(20px, env(safe-area-inset-bottom));
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-items: center !important;
+    }
+
+    /* Redefinido usando porcentagem rígida para obrigar a expansão proporcional */
     .card-container {
       width: 100% !important;
-      max-width: 440px !important;
+      max-width: 460px !important;
       background: rgba(255, 255, 255, 0.06);
       border: 1px rgba(255, 255, 255, 0.08) solid;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border-radius: 28px;
-      padding: 28px 20px;
+      padding: 32px 24px;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
       display: flex !important;
       flex-direction: column !important;
       align-items: center !important;
     }
 
-    .logo-wrap { display: flex; justify-content: center; align-items: center; margin-bottom: 12px; }
-    .logo-wrap img { max-width: 210px; width: 100%; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.28)); }
+    .logo-wrap { display: flex; justify-content: center; align-items: center; margin-bottom: 16px; }
+    .logo-wrap img { max-width: 220px; width: 100%; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.28)); }
 
-    .title { text-align: center; font-size: 19px; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.2px; }
-    .subtitle { text-align: center; font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.4; margin-bottom: 20px; }
+    .title { text-align: center; font-size: 20px; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.2px; }
+    .subtitle { text-align: center; font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.45; margin-bottom: 24px; }
 
     .scanner-shell {
       position: relative;
@@ -133,9 +135,9 @@
     }
 
     .reading-status { 
-      margin-top: 20px; 
+      margin-top: 24px; 
       text-align: center; 
-      font-size: 15px; 
+      font-size: 16px; 
       font-weight: 600; 
       color: rgba(255,255,255,0.85); 
     }
@@ -144,16 +146,16 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-top: 16px;
+      margin-top: 20px;
       width: 100%;
-      max-width: 210px;
-      height: 44px;
+      max-width: 220px;
+      height: 48px;
       border-radius: 14px;
       border: none;
       background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%);
       color: #fff;
       font-weight: 700;
-      font-size: 16px;
+      font-size: 17px;
       cursor: pointer;
       box-shadow: 0 6px 16px rgba(0,0,0,0.25);
     }
@@ -167,19 +169,6 @@
       align-items: center;
       justify-content: center;
       z-index: 9999;
-    }
-
-    /* Se o celular for muito pequeno, removemos cantos e bordas para virar tela cheia nativa */
-    @media (max-width: 480px) {
-      .app {
-        padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)) !important;
-      }
-      .card-container {
-        border: none !important;
-        background: transparent !important;
-        box-shadow: none !important;
-        padding: 10px 0 !important;
-      }
     }
   </style>
 </head>
