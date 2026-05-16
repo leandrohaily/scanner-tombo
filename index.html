@@ -151,14 +151,27 @@
         rgba(255,255,255,0.10);
     }
 
+    @keyframes laserMove {
+
+      0% {
+        top: 37%;
+      }
+
+      50% {
+        top: 63%;
+      }
+
+      100% {
+        top: 37%;
+      }
+    }
+
     .laser {
 
       position: absolute;
 
       left: 8%;
       right: 8%;
-
-      top: 50%;
 
       height: 4px;
 
@@ -167,6 +180,9 @@
       box-shadow:
         0 0 8px #ff3a3a,
         0 0 18px #ff3a3a;
+
+      animation:
+        laserMove 1.7s ease-in-out infinite;
     }
 
     .corner {
