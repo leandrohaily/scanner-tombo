@@ -88,7 +88,7 @@
       text-align: center;
 
       font-size: 26px;
-       font-weight: 600;
+      font-weight: 600;
 
       color:
         rgba(255,255,255,0.78);
@@ -242,7 +242,7 @@
 
       font-size: 24px;
 
-       font-weight: 600;
+      font-weight: 600;
 
       color:
         rgba(255,255,255,0.82);
@@ -300,6 +300,27 @@
       box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.28),
         0 8px 18px rgba(0,0,0,0.30);
+    }
+
+    /* OVERLAY VERDE DE SUCESSO */
+
+    #successOverlay {
+
+      position: fixed;
+
+      inset: 0;
+
+      background: rgba(0, 168, 89, 0.96);
+
+      display: none;
+
+      flex-direction: column;
+
+      align-items: center;
+
+      justify-content: center;
+
+      z-index: 9999;
     }
 
     @media (max-width: 768px) {
@@ -361,7 +382,7 @@
 
         border-radius: 26px;
 
-         margin-top: 10px;
+        margin-top: 10px;
       }
 
       .logo {
@@ -477,6 +498,20 @@
 
   </div>
 
+  <!-- OVERLAY VERDE -->
+
+  <div id="successOverlay">
+
+    <div style="font-size:72px">
+      ✔
+    </div>
+
+    <div style="font-size:22px; font-weight:800">
+      TOMBO LIDO
+    </div>
+
+  </div>
+
   <script>
 
     const APP_URL =
@@ -487,6 +522,13 @@
     let leituraFinalizada = false;
 
     function voltarParaApp(tombo) {
+
+      if (tombo) {
+
+        document.getElementById(
+          "successOverlay"
+        ).style.display = "flex";
+      }
 
       const url =
         `${APP_URL}?tombo=${encodeURIComponent(tombo)}&scanner_return=1&t=${Date.now()}`;
@@ -605,6 +647,10 @@
               "Código lido!";
 
             tocarBeep();
+
+            document.getElementById(
+              "successOverlay"
+            ).style.display = "flex";
 
             try {
 
