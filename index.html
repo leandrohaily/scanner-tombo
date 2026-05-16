@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title>Invent JUS</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
   <script src="https://unpkg.com/html5-qrcode"></script>
 
@@ -19,53 +18,67 @@
       min-height: 100dvh;
       font-family: Arial, sans-serif;
       color: #fff;
-      background: linear-gradient(180deg, #030d20 0%, #071a3b 45%, #041127 100%);
+      background: radial-gradient(circle at top, rgba(64, 110, 255, 0.20), transparent 34%),
+                  linear-gradient(180deg, #030d20 0%, #071a3b 45%, #041127 100%);
       overflow: hidden;
     }
 
     body {
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
     .app {
       width: 100%;
+      max-width: 520px;
       height: 100%;
       min-height: 100dvh;
-      padding: max(20px, env(safe-area-inset-top)) 16px max(20px, env(safe-area-inset-bottom));
-      background: radial-gradient(circle at top, rgba(64, 110, 255, 0.15), transparent 40%);
+      margin: 0 auto;
+      padding: max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom));
       position: relative;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      justify-content: center;
+      align-items: center;
     }
 
-    .logo-wrap { display: flex; justify-content: center; align-items: center; margin-bottom: 8px; }
-    .logo-wrap img { max-width: 200px; width: 100%; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.28)); }
+    /* O Card Centralizado Original */
+    .card-container {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px rgba(255, 255, 255, 0.08) solid;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 28px;
+      padding: 24px 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-    .title { text-align: center; font-size: 19px; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.2px; }
-    .subtitle { text-align: center; font-size: 14px; color: rgba(255,255,255,0.82); line-height: 1.45; margin-bottom: 12px; }
+    .logo-wrap { display: flex; justify-content: center; align-items: center; margin-bottom: 14px; }
+    .logo-wrap img { max-width: 210px; width: 100%; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.28)); }
 
-    /* Força o scanner a ocupar todo o espaço central disponível da tela */
+    .title { text-align: center; font-size: 18px; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.2px; }
+    .subtitle { text-align: center; font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.45; margin-bottom: 20px; }
+
     .scanner-shell {
       position: relative;
       overflow: hidden;
       border-radius: 22px;
       background: #000;
       width: 100%;
-      flex: 1; 
-      display: flex;
-      flex-direction: column;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 10px 30px rgba(0,0,0,0.4);
+      aspect-ratio: 4 / 3; /* Mantém a proporção exata da câmera original */
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 10px 25px rgba(0,0,0,0.3);
     }
 
     #reader {
       width: 100% !important;
       height: 100% !important;
-      flex: 1;
       background: #000;
       border: none !important;
-      position: relative;
     }
 
     #reader video {
@@ -79,9 +92,10 @@
 
     .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
 
+    /* Mira customizada idêntica à original */
     .scan-box {
       position: absolute; left: 50%; top: 50%;
-      width: 85%; height: 180px; 
+      width: 82%; height: 140px; 
       transform: translate(-50%, -50%);
       border: none !important;
       box-shadow: none !important; 
@@ -99,49 +113,50 @@
     .laser-active { opacity: 1 !important; }
 
     @keyframes laserMove { 
-      0%, 100% { top: 12%; } 
-      50% { top: 88%; } 
+      0%, 100% { top: 15%; } 
+      50% { top: 85%; } 
     }
 
     .scan-hint {
       position: absolute;
       left: 50%;
-      bottom: 20px;
+      bottom: 16px;
       transform: translateX(-50%);
       width: 90%;
       text-align: center;
-      font-size: 13px;
-      color: rgba(255,255,255,0.9);
-      text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+      font-size: 12px;
+      color: rgba(255,255,255,0.75);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.6);
       z-index: 23;
       opacity: 0;
       transition: opacity 0.5s;
+      white-space: nowrap;
     }
 
     .reading-status { 
-      margin-top: 12px; 
+      margin-top: 20px; 
       text-align: center; 
       font-size: 15px; 
       font-weight: 600; 
-      color: rgba(255,255,255,0.92); 
+      color: rgba(255,255,255,0.85); 
     }
 
     .cancel-btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 12px auto 0;
+      margin-top: 16px;
       width: 100%;
-      max-width: 280px;
-      height: 48px;
+      max-width: 200px;
+      height: 44px;
       border-radius: 14px;
       border: none;
       background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%);
       color: #fff;
       font-weight: 700;
-      font-size: 17px;
+      font-size: 16px;
       cursor: pointer;
-      box-shadow: 0 6px 14px rgba(0,0,0,0.3);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.25);
     }
 
     #successOverlay {
@@ -155,9 +170,12 @@
       z-index: 9999;
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 480px) {
       .app {
-        padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+        padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+      }
+      .card-container {
+        padding: 20px 16px;
       }
     }
   </style>
@@ -165,7 +183,7 @@
 <body>
 
   <div class="app">
-    <div>
+    <div class="card-container">
       <div class="logo-wrap">
         <img src="logo-inventjus.png" alt="Invent JUS">
       </div>
@@ -174,23 +192,21 @@
       <div class="subtitle">
         Centralize a etiqueta patrimonial dentro da área de leitura.
       </div>
-    </div>
 
-    <div class="scanner-shell">
-      <div id="reader"></div>
+      <div class="scanner-shell">
+        <div id="reader"></div>
 
-      <div class="overlay">
-        <div class="scan-box">
-          <div class="laser-line" id="laser"></div>
-        </div>
+        <div class="overlay">
+          <div class="scan-box">
+            <div class="laser-line" id="laser"></div>
+          </div>
 
-        <div class="scan-hint" id="hint">
-          Aproxime e mantenha o código alinhado na horizontal
+          <div class="scan-hint" id="hint">
+            Aproxime e mantenha o código alinhado na horizontal
+          </div>
         </div>
       </div>
-    </div>
 
-    <div>
       <div class="reading-status" id="status-text">
         Iniciando...
       </div>
@@ -276,13 +292,8 @@
 
       const config = {
         fps: 25,
-        qrbox: function(viewfinderWidth, viewfinderHeight) {
-          // Torna o box de leitura responsivo ao tamanho da câmera ativa
-          const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-          const boxWidth = Math.floor(minEdge * 0.85);
-          return { width: boxWidth, height: 160 };
-        },
-        aspectRatio: window.innerWidth / window.innerHeight
+        qrbox: { width: 300, height: 160 }, // Restaurado configuração original da mira
+        aspectRatio: 1.333333
       };
 
       html5QrCode.start(
