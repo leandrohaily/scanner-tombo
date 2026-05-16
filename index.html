@@ -2,107 +2,77 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Invent JUS</title>
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Invent Jus - Leitor de Código de Barras</title>
+
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    
-    html, body {
-      margin: 0 !important;
-      padding: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
-      min-height: 100dvh !important;
-      font-family: Arial, sans-serif;
-      color: #fff;
-      background: #030d20 !important;
-      overflow: hidden !important;
-      -webkit-text-size-adjust: 100%;
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100dvh;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top, #132b58 0%, #061a36 45%, #021226 100%);
+      color: white;
+      overflow-x: hidden;
     }
 
     body {
-      display: block !important;
-    }
-
-    .app {
-      width: 100vw !important;
-      height: 100dvh !important;
-      min-height: 100dvh !important;
-      padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0 !important;
-      display: flex !important;
-      flex-direction: column !important;
-      justify-content: flex-start !important;
-      align-items: stretch !important;
-      background: radial-gradient(circle at top, rgba(64, 110, 255, 0.20), transparent 34%),
-                  linear-gradient(180deg, #030d20 0%, #071a3b 45%, #041127 100%) !important;
-    }
-
-    .card-container {
-      width: 100vw !important;
-      max-width: none !important;
-      height: 100dvh !important;
-      min-height: 100dvh !important;
-      margin: 0 !important;
-      border-radius: 0 !important;
-      padding: 32px 18px 24px 18px !important;
-      background: rgba(255, 255, 255, 0.06);
-      border: none !important;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      box-shadow: none !important;
-      display: flex !important;
-      flex-direction: column !important;
-      align-items: center !important;
-    }
-
-    .logo-wrap {
       display: flex;
+      align-items: flex-start;
       justify-content: center;
-      align-items: center;
-      margin-bottom: 12px;
-      width: 100%;
+      box-sizing: border-box;
+      padding-top: env(safe-area-inset-top);
     }
 
-    .logo-wrap img {
-      max-width: 240px;
-      width: 65%;
-      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.28));
-    }
-
-    .title {
+    .scanner-card {
+      width: calc(100vw - 32px);
+      max-width: 620px;
+      margin: 32px auto 0 auto;
+      padding: 22px 18px;
+      border-radius: 24px;
+      box-sizing: border-box;
+      background: rgba(20, 42, 78, 0.82);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
       text-align: center;
-      font-size: 21px;
+    }
+
+    .logo {
+      max-width: 230px;
+      width: 58%;
+      margin: 0 auto 10px auto;
+      display: block;
+    }
+
+    h1 {
+      margin: 8px 0 6px 0;
+      font-size: 20px;
       font-weight: 700;
-      margin-bottom: 6px;
-      letter-spacing: 0.2px;
     }
 
     .subtitle {
-      text-align: center;
+      margin: 0 0 18px 0;
       font-size: 13px;
-      color: rgba(255,255,255,0.75);
-      line-height: 1.45;
-      margin-bottom: 20px;
+      color: rgba(255, 255, 255, 0.78);
     }
 
-    .scanner-shell {
+    .reader-wrapper {
       position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 18px;
       overflow: hidden;
-      border-radius: 22px;
       background: #000;
-      width: 100% !important;
-      height: 52dvh !important;
-      max-height: 520px;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 10px 25px rgba(0,0,0,0.3);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
     }
 
     #reader {
-      width: 100% !important;
-      height: 100% !important;
-      background: #000;
+      width: 100%;
+      height: 100%;
       border: none !important;
     }
 
@@ -110,170 +80,202 @@
       width: 100% !important;
       height: 100% !important;
       object-fit: cover !important;
-      border-radius: 22px;
     }
 
-    #reader__scan_region svg {
+    #reader__dashboard,
+    #reader__scan_region img,
+    #reader__header_message,
+    #reader__camera_selection {
       display: none !important;
     }
 
     .overlay {
+      pointer-events: none;
       position: absolute;
       inset: 0;
-      pointer-events: none;
-      z-index: 20;
+      z-index: 10;
     }
 
     .scan-box {
       position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 82%;
-      height: 160px;
-      transform: translate(-50%, -50%);
-      border: none !important;
-      box-shadow: none !important;
+      left: 14%;
+      right: 14%;
+      top: 29%;
+      height: 34%;
+      background: rgba(255, 255, 255, 0.10);
     }
 
-    .laser-line {
+    .laser {
       position: absolute;
-      left: 5%;
-      right: 5%;
+      left: 8%;
+      right: 8%;
+      top: 49%;
       height: 3px;
-      background: #ff4747;
-      box-shadow: 0 0 12px #ff4747;
-      animation: laserMove 2.2s ease-in-out infinite;
-      z-index: 22;
-      opacity: 0;
-      transition: opacity 0.5s;
-    }
-    
-    .laser-active {
-      opacity: 1 !important;
+      background: #ff3b3b;
+      box-shadow: 0 0 12px #ff3b3b;
     }
 
-    @keyframes laserMove {
-      0%, 100% { top: 15%; }
-      50% { top: 85%; }
-    }
-
-    .scan-hint {
+    .corner {
       position: absolute;
-      left: 50%;
+      width: 42px;
+      height: 42px;
+      border-color: white;
+      border-style: solid;
+    }
+
+    .top-left {
+      left: 14%;
+      top: 25%;
+      border-width: 5px 0 0 5px;
+    }
+
+    .top-right {
+      right: 14%;
+      top: 25%;
+      border-width: 5px 5px 0 0;
+    }
+
+    .bottom-left {
+      left: 14%;
+      bottom: 25%;
+      border-width: 0 0 5px 5px;
+    }
+
+    .bottom-right {
+      right: 14%;
+      bottom: 25%;
+      border-width: 0 5px 5px 0;
+    }
+
+    .hint {
+      position: absolute;
+      left: 0;
+      right: 0;
       bottom: 16px;
-      transform: translateX(-50%);
-      width: 90%;
-      text-align: center;
       font-size: 12px;
-      color: rgba(255,255,255,0.75);
-      text-shadow: 0 1px 3px rgba(0,0,0,0.6);
-      z-index: 23;
-      opacity: 0;
-      transition: opacity 0.5s;
-      white-space: nowrap;
+      color: rgba(255, 255, 255, 0.82);
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
     }
 
-    .reading-status {
-      margin-top: 22px;
-      text-align: center;
-      font-size: 17px;
-      font-weight: 600;
-      color: rgba(255,255,255,0.85);
-    }
-
-    .cancel-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 20px;
-      width: 100%;
-      max-width: 260px;
-      height: 52px;
-      border-radius: 14px;
-      border: none;
-      background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%);
-      color: #fff;
+    .status {
+      margin: 20px 0 18px 0;
+      font-size: 16px;
       font-weight: 700;
-      font-size: 18px;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .cancel-button {
+      width: 210px;
+      max-width: 70%;
+      height: 48px;
+      border: none;
+      border-radius: 13px;
+      background: linear-gradient(180deg, #ef3434 0%, #c91515 100%);
+      color: white;
+      font-size: 17px;
+      font-weight: 700;
       cursor: pointer;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 6px 16px rgba(0,0,0,0.28);
     }
 
-    #successOverlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 168, 89, 0.96);
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-    }
-
-    @media (min-width: 768px) {
-      .card-container {
-        padding-left: 28px !important;
-        padding-right: 28px !important;
+    @media (max-width: 768px) {
+      .scanner-card {
+        width: calc(100vw - 16px);
+        max-width: 620px;
+        margin-top: 24px;
+        padding: 20px 16px;
+        border-radius: 22px;
       }
 
-      .scanner-shell {
-        max-width: 720px;
-        align-self: center;
+      .logo {
+        width: 54%;
+        max-width: 220px;
+      }
+
+      h1 {
+        font-size: 19px;
+      }
+
+      .subtitle {
+        font-size: 12px;
+        margin-bottom: 16px;
+      }
+
+      .reader-wrapper {
+        aspect-ratio: 16 / 9;
+        border-radius: 17px;
+      }
+    }
+
+    @media (max-width: 390px) {
+      .scanner-card {
+        width: calc(100vw - 12px);
+        margin-top: 18px;
+        padding: 18px 14px;
+      }
+
+      .cancel-button {
+        height: 46px;
       }
     }
   </style>
 </head>
+
 <body>
+  <div class="scanner-card">
+    <img class="logo" src="https://leandrohaily.github.io/scanner-tombo/logo.png" alt="Invent Jus" />
 
-  <div class="app" id="appRoot">
-    <div class="card-container" id="mainCard">
-      <div class="logo-wrap">
-        <img src="logo-inventjus.png" alt="Invent JUS">
+    <h1>Leitor de código de barras</h1>
+    <p class="subtitle">Centralize a etiqueta patrimonial dentro da área de leitura.</p>
+
+    <div class="reader-wrapper">
+      <div id="reader"></div>
+
+      <div class="overlay">
+        <div class="scan-box"></div>
+        <div class="laser"></div>
+
+        <div class="corner top-left"></div>
+        <div class="corner top-right"></div>
+        <div class="corner bottom-left"></div>
+        <div class="corner bottom-right"></div>
+
+        <div class="hint">Aproxime e mantenha o código alinhado na horizontal</div>
       </div>
-
-      <div class="title">Leitor de código de barras</div>
-      <div class="subtitle">
-        Centralize a etiqueta patrimonial dentro da área de leitura.
-      </div>
-
-      <div class="scanner-shell">
-        <div id="reader"></div>
-
-        <div class="overlay">
-          <div class="scan-box">
-            <div class="laser-line" id="laser"></div>
-          </div>
-
-          <div class="scan-hint" id="hint">
-            Aproxime e mantenha o código alinhado na horizontal
-          </div>
-        </div>
-      </div>
-
-      <div class="reading-status" id="status-text">
-        Iniciando...
-      </div>
-
-      <button class="cancel-btn" onclick="retornarAoApp('cancelado')">
-        Cancelar
-      </button>
     </div>
-  </div>
 
-  <div id="successOverlay">
-    <div style="font-size:72px">✔</div>
-    <div style="font-size:22px; font-weight:800">
-      TOMBO LIDO
-    </div>
+    <div id="status" class="status">Lendo...</div>
+
+    <button class="cancel-button" onclick="cancelarLeitura()">Cancelar</button>
   </div>
 
   <script>
     const APP_URL = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariadosCopy";
 
-    let html5QrCode = null;
-    let isReturning = false;
+    let html5QrCode;
+    let leituraFinalizada = false;
 
-    function playSyntheticBeep() {
+    function voltarParaApp(tombo) {
+      const url = `${APP_URL}?tombo=${encodeURIComponent(tombo)}&scanner_return=1&t=${Date.now()}`;
+      window.location.href = url;
+    }
+
+    async function cancelarLeitura() {
+      leituraFinalizada = true;
+
+      try {
+        if (html5QrCode) {
+          await html5QrCode.stop();
+          await html5QrCode.clear();
+        }
+      } catch (e) {
+        console.log("Erro ao parar leitor:", e);
+      }
+
+      voltarParaApp("cancelado");
+    }
+
+    function tocarBeep() {
       try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const oscillator = audioCtx.createOscillator();
@@ -282,82 +284,71 @@
         oscillator.connect(gainNode);
         gainNode.connect(audioCtx.destination);
 
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
-
-        gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.01);
-        gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.2);
+        oscillator.type = "sine";
+        oscillator.frequency.value = 900;
+        gainNode.gain.value = 0.18;
 
         oscillator.start();
-        oscillator.stop(audioCtx.currentTime + 0.2);
-      } catch (e) {}
+        setTimeout(() => {
+          oscillator.stop();
+          audioCtx.close();
+        }, 150);
+      } catch (e) {
+        console.log("Beep não executado:", e);
+      }
     }
 
-    async function retornarAoApp(codigo = null) {
-      if (isReturning) return;
-      isReturning = true;
-
-      if (codigo && codigo !== 'cancelado') {
-        document.getElementById("successOverlay").style.display = "flex";
-        playSyntheticBeep();
-        if (navigator.vibrate) {
-          navigator.vibrate([100, 50, 100]);
-        }
-      }
-
-      const url = new URL(APP_URL);
-
-      if (codigo === 'cancelado') {
-        url.searchParams.set("tombo", "cancelado");
-      } else if (codigo) {
-        url.searchParams.set("tombo", codigo.replace(/\D/g, ""));
-      } else {
-        url.searchParams.set("tombo", "");
-      }
-
-      url.searchParams.set("scanner_return", "1");
-      url.searchParams.set("t", Date.now());
-
-      if (html5QrCode) {
-        try {
-          await html5QrCode.stop();
-        } catch(e) {}
-      }
-
-      setTimeout(() => {
-        window.location.assign(url.toString());
-      }, codigo && codigo !== 'cancelado' ? 400 : 0);
-    }
-
-    function iniciarScanner() {
+    async function iniciarLeitor() {
       html5QrCode = new Html5Qrcode("reader");
 
       const config = {
-        fps: 25,
-        qrbox: { width: 300, height: 160 },
-        aspectRatio: 1.333333
+        fps: 12,
+        qrbox: function(viewfinderWidth, viewfinderHeight) {
+          return {
+            width: Math.floor(viewfinderWidth * 0.72),
+            height: Math.floor(viewfinderHeight * 0.34)
+          };
+        },
+        aspectRatio: 1.7777778,
+        formatsToSupport: [
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.CODE_39
+        ]
       };
 
-      html5QrCode.start(
-        { facingMode: "environment" },
-        config,
-        (text) => {
-          retornarAoApp(text);
-        }
-      ).then(() => {
-        document.getElementById('status-text').innerText = "Lendo...";
-        document.getElementById('laser').classList.add('laser-active');
-        document.getElementById('hint').classList.add('laser-active');
-      }).catch(() => {
-        document.getElementById('status-text').innerText = "Erro ao acessar câmera.";
-      });
+      try {
+        await html5QrCode.start(
+          { facingMode: "environment" },
+          config,
+          async function(decodedText) {
+            if (leituraFinalizada) return;
+
+            leituraFinalizada = true;
+            document.getElementById("status").innerText = "Código lido!";
+            tocarBeep();
+
+            try {
+              await html5QrCode.stop();
+              await html5QrCode.clear();
+            } catch (e) {
+              console.log("Erro ao finalizar câmera:", e);
+            }
+
+            setTimeout(() => {
+              voltarParaApp(decodedText);
+            }, 250);
+          },
+          function(errorMessage) {
+            // Ignora erros contínuos de leitura
+          }
+        );
+      } catch (err) {
+        document.getElementById("status").innerText = "Erro ao acessar a câmera";
+        console.log("Erro ao iniciar leitor:", err);
+      }
     }
 
-    window.addEventListener("load", () => {
-      setTimeout(iniciarScanner, 200);
-    });
+    window.addEventListener("load", iniciarLeitor);
   </script>
-
 </body>
 </html>
