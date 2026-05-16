@@ -9,6 +9,7 @@
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
+
     html,
     body {
       margin: 0;
@@ -16,8 +17,15 @@
       width: 100%;
       min-height: 100dvh;
       overflow-x: hidden;
+
       font-family: Arial, Helvetica, sans-serif;
-      background: radial-gradient(circle at top, #102957 0%, #041b3d 45%, #021228 100%);
+
+      background:
+        radial-gradient(circle at top,
+        #102957 0%,
+        #041b3d 45%,
+        #021228 100%);
+
       color: white;
     }
 
@@ -25,245 +33,366 @@
       display: flex;
       align-items: flex-start;
       justify-content: center;
+
       padding-top: env(safe-area-inset-top);
     }
 
     .scanner-card {
+
       width: calc(100vw - 10px);
-      max-width: 720px;
+      max-width: 760px;
+
       margin: 18px auto 0 auto;
-      padding: 32px 28px 36px 28px;
+
+      padding: 34px 28px 40px 28px;
+
       border-radius: 34px;
+
       box-sizing: border-box;
-      background: rgba(21, 41, 76, 0.88);
-      border: 1px solid rgba(255,255,255,0.10);
+
+      background:
+        rgba(21, 41, 76, 0.88);
+
+      border:
+        1px solid rgba(255,255,255,0.10);
+
       box-shadow:
         0 20px 45px rgba(0,0,0,0.35),
         inset 0 1px 0 rgba(255,255,255,0.04);
     }
 
     .logo {
-      width: 320px;
-      max-width: 72%;
+
+      width: 380px;
+      max-width: 82%;
+
       display: block;
-      margin: 0 auto 20px auto;
+
+      margin: 0 auto 24px auto;
     }
 
     h1 {
+
       margin: 6px 0 12px 0;
+
       text-align: center;
-      font-size: 28px;
+
+      font-size: 32px;
       font-weight: 700;
     }
 
     .subtitle {
-      margin: 0 0 28px 0;
+
+      margin: 0 0 30px 0;
+
       text-align: center;
-      font-size: 18px;
-      color: rgba(255,255,255,0.78);
+
+      font-size: 20px;
+
+      color:
+        rgba(255,255,255,0.78);
     }
 
     .reader-wrapper {
+
       position: relative;
+
       width: 100%;
+
       aspect-ratio: 16 / 9;
-      border-radius: 22px;
+
+      border-radius: 24px;
+
       overflow: hidden;
+
       background: black;
-      box-shadow: 0 10px 28px rgba(0,0,0,0.35);
+
+      box-shadow:
+        0 10px 28px rgba(0,0,0,0.35);
     }
 
     #reader {
+
       width: 100%;
       height: 100%;
     }
 
     #reader video {
+
       width: 100% !important;
       height: 100% !important;
+
       object-fit: cover !important;
     }
 
     .overlay {
+
       position: absolute;
+
       inset: 0;
+
       pointer-events: none;
+
       z-index: 10;
     }
 
     .scan-box {
+
       position: absolute;
+
       left: 8%;
       right: 8%;
+
       top: 31%;
+
       height: 38%;
-      background: rgba(255,255,255,0.10);
+
+      background:
+        rgba(255,255,255,0.10);
     }
 
     .laser {
+
       position: absolute;
+
       left: 8%;
       right: 8%;
+
       top: 50%;
+
       height: 4px;
+
       background: #ff3a3a;
+
       box-shadow:
         0 0 8px #ff3a3a,
         0 0 18px #ff3a3a;
     }
 
     .corner {
+
       position: absolute;
+
       width: 58px;
       height: 58px;
+
       border-color: white;
       border-style: solid;
     }
 
     .top-left {
+
       left: 8%;
       top: 27%;
+
       border-width: 6px 0 0 6px;
     }
 
     .top-right {
+
       right: 8%;
       top: 27%;
+
       border-width: 6px 6px 0 0;
     }
 
     .bottom-left {
+
       left: 8%;
       bottom: 27%;
+
       border-width: 0 0 6px 6px;
     }
 
     .bottom-right {
+
       right: 8%;
       bottom: 27%;
+
       border-width: 0 6px 6px 0;
     }
 
     .hint {
+
       position: absolute;
+
       left: 0;
       right: 0;
+
       bottom: 20px;
+
       text-align: center;
-      font-size: 16px;
-      color: rgba(255,255,255,0.82);
-      text-shadow: 0 1px 4px rgba(0,0,0,0.85);
+
+      font-size: 18px;
+
+      color:
+        rgba(255,255,255,0.82);
+
+      text-shadow:
+        0 1px 4px rgba(0,0,0,0.85);
     }
 
     .status {
-      margin-top: 28px;
+
+      margin-top: 30px;
+
       text-align: center;
-      font-size: 24px;
+
+      font-size: 28px;
       font-weight: 700;
-      color: rgba(255,255,255,0.90);
+
+      color:
+        rgba(255,255,255,0.90);
     }
 
     .cancel-container {
-      margin-top: 26px;
+
+      margin-top: 28px;
+
       display: flex;
       justify-content: center;
     }
 
     .cancel-button {
-      width: 330px;
-      max-width: 76%;
-      height: 68px;
+
+      width: 360px;
+      max-width: 78%;
+
+      height: 76px;
+
       border: none;
+
       border-radius: 22px;
+
       cursor: pointer;
+
       color: white;
-      font-size: 24px;
+
+      font-size: 28px;
       font-weight: 700;
-      background: linear-gradient(180deg, #ef3737 0%, #c91515 100%);
+
+      background:
+        linear-gradient(
+          180deg,
+          #ef3737 0%,
+          #c91515 100%
+        );
+
       box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.28),
         0 8px 18px rgba(0,0,0,0.30);
     }
 
     @media (max-width: 768px) {
+
       .scanner-card {
-        width: calc(100vw - 10px);
-        margin-top: 18px;
-        padding: 30px 24px 34px 24px;
-        border-radius: 32px;
+
+        width: calc(100vw - 8px);
+
+        padding:
+          30px 20px 34px 20px;
+
+        border-radius: 30px;
       }
 
       .logo {
-        width: 300px;
-        max-width: 72%;
+
+        width: 340px;
+        max-width: 84%;
       }
 
       h1 {
-        font-size: 27px;
+
+        font-size: 30px;
       }
 
       .subtitle {
-        font-size: 17px;
+
+        font-size: 18px;
       }
 
       .hint {
-        font-size: 15px;
+
+        font-size: 16px;
       }
 
       .status {
-        font-size: 23px;
+
+        font-size: 26px;
       }
 
       .cancel-button {
+
         width: 320px;
-        height: 66px;
-        font-size: 23px;
+
+        height: 70px;
+
+        font-size: 26px;
       }
     }
 
     @media (max-width: 420px) {
+
       .scanner-card {
-        width: calc(100vw - 8px);
-        padding: 26px 18px 30px 18px;
-        border-radius: 28px;
+
+        width: calc(100vw - 6px);
+
+        padding:
+          24px 16px 30px 16px;
+
+        border-radius: 26px;
       }
 
       .logo {
-        width: 270px;
-        max-width: 74%;
+
+        width: 300px;
+        max-width: 86%;
       }
 
       h1 {
-        font-size: 24px;
+
+        font-size: 26px;
       }
 
       .subtitle {
-        font-size: 15px;
-        margin-bottom: 22px;
+
+        font-size: 16px;
+
+        margin-bottom: 24px;
       }
 
       .corner {
+
         width: 48px;
         height: 48px;
       }
 
       .hint {
-        font-size: 13px;
+
+        font-size: 14px;
+
         bottom: 16px;
       }
 
       .status {
-        font-size: 21px;
-        margin-top: 22px;
+
+        font-size: 24px;
+
+        margin-top: 24px;
       }
 
       .cancel-button {
+
         width: 280px;
-        height: 60px;
-        font-size: 21px;
+
+        height: 64px;
+
+        font-size: 24px;
+
         border-radius: 18px;
       }
     }
+
   </style>
 </head>
 
@@ -277,7 +406,9 @@
       alt="Invent Jus"
     />
 
-    <h1>Leitor de código de barras</h1>
+    <h1>
+      Leitor de código de barras
+    </h1>
 
     <p class="subtitle">
       Centralize a etiqueta patrimonial dentro da área de leitura.
@@ -312,21 +443,30 @@
     </div>
 
     <div class="cancel-container">
-      <button class="cancel-button" onclick="cancelarLeitura()">
+
+      <button
+        class="cancel-button"
+        onclick="cancelarLeitura()">
+
         Cancelar
+
       </button>
+
     </div>
 
   </div>
 
   <script>
+
     const APP_URL =
       "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariadosCopy";
 
     let html5QrCode;
+
     let leituraFinalizada = false;
 
     function voltarParaApp(tombo) {
+
       const url =
         `${APP_URL}?tombo=${encodeURIComponent(tombo)}&scanner_return=1&t=${Date.now()}`;
 
@@ -334,109 +474,159 @@
     }
 
     async function cancelarLeitura() {
+
       leituraFinalizada = true;
 
       try {
+
         if (html5QrCode) {
+
           await html5QrCode.stop();
+
           await html5QrCode.clear();
         }
+
       } catch (e) {
-        console.log("Erro ao parar câmera:", e);
+
+        console.log(
+          "Erro ao parar câmera:",
+          e
+        );
       }
 
       voltarParaApp("cancelado");
     }
 
     function tocarBeep() {
-      try {
-        const audioCtx =
-          new (window.AudioContext || window.webkitAudioContext)();
 
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
+      try {
+
+        const audioCtx =
+          new (
+            window.AudioContext ||
+            window.webkitAudioContext
+          )();
+
+        const oscillator =
+          audioCtx.createOscillator();
+
+        const gainNode =
+          audioCtx.createGain();
 
         oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
+
+        gainNode.connect(
+          audioCtx.destination
+        );
 
         oscillator.type = "sine";
+
         oscillator.frequency.value = 900;
+
         gainNode.gain.value = 0.18;
 
         oscillator.start();
 
         setTimeout(() => {
+
           oscillator.stop();
+
           audioCtx.close();
+
         }, 150);
 
       } catch (e) {
-        console.log("Erro beep:", e);
+
+        console.log(
+          "Erro beep:",
+          e
+        );
       }
     }
 
     async function iniciarScanner() {
-      html5QrCode = new Html5Qrcode("reader");
+
+      html5QrCode =
+        new Html5Qrcode("reader");
 
       const config = {
-        fps: 12,
 
-        qrbox: function(viewfinderWidth, viewfinderHeight) {
-          return {
-            width: Math.floor(viewfinderWidth * 0.84),
-            height: Math.floor(viewfinderHeight * 0.38)
-          };
-        },
+        fps: 12,
 
         aspectRatio: 1.7777778,
 
         formatsToSupport: [
+
           Html5QrcodeSupportedFormats.CODE_128,
+
           Html5QrcodeSupportedFormats.CODE_39
         ]
       };
 
       try {
+
         await html5QrCode.start(
+
           { facingMode: "environment" },
+
           config,
 
           async (decodedText) => {
-            if (leituraFinalizada) return;
+
+            if (leituraFinalizada)
+              return;
 
             leituraFinalizada = true;
 
-            document.getElementById("status").innerText =
+            document.getElementById(
+              "status"
+            ).innerText =
               "Código lido!";
 
             tocarBeep();
 
             try {
+
               await html5QrCode.stop();
+
               await html5QrCode.clear();
+
             } catch (e) {
-              console.log("Erro ao finalizar:", e);
+
+              console.log(
+                "Erro ao finalizar:",
+                e
+              );
             }
 
             setTimeout(() => {
+
               voltarParaApp(decodedText);
+
             }, 250);
           },
 
           () => {
-            // Ignora erros contínuos de leitura
+            // Ignora erros contínuos
           }
         );
 
       } catch (err) {
-        document.getElementById("status").innerText =
+
+        document.getElementById(
+          "status"
+        ).innerText =
           "Erro ao acessar câmera";
 
         console.log(err);
       }
     }
 
-    window.addEventListener("load", iniciarScanner);
+    window.addEventListener(
+      "load",
+      iniciarScanner
+    );
+
   </script>
 
 </body>
