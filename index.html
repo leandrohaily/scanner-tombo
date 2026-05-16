@@ -24,45 +24,69 @@
     }
 
     body {
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
+      display: block !important;
     }
 
-    /* Container base configurado dinamicamente via JS caso o Safari tente espremer */
     .app {
-      width: 100% !important;
+      width: 100vw !important;
       height: 100dvh !important;
-      padding: max(20px, env(safe-area-inset-top)) 16px max(20px, env(safe-area-inset-bottom));
+      min-height: 100dvh !important;
+      padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0 !important;
       display: flex !important;
       flex-direction: column !important;
-      justify-content: center !important;
-      align-items: center !important;
+      justify-content: flex-start !important;
+      align-items: stretch !important;
       background: radial-gradient(circle at top, rgba(64, 110, 255, 0.20), transparent 34%),
                   linear-gradient(180deg, #030d20 0%, #071a3b 45%, #041127 100%) !important;
     }
 
-    /* O Card agora usará largura máxima controlada e responsiva por JS no mobile */
     .card-container {
-      width: 100% !important;
-      max-width: 440px;
+      width: 100vw !important;
+      max-width: none !important;
+      height: 100dvh !important;
+      min-height: 100dvh !important;
+      margin: 0 !important;
+      border-radius: 0 !important;
+      padding: 32px 18px 24px 18px !important;
       background: rgba(255, 255, 255, 0.06);
-      border: 1px rgba(255, 255, 255, 0.08) solid;
+      border: none !important;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border-radius: 28px;
-      padding: 32px 24px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      box-shadow: none !important;
       display: flex !important;
       flex-direction: column !important;
       align-items: center !important;
     }
 
-    .logo-wrap { display: flex; justify-content: center; align-items: center; margin-bottom: 16px; }
-    .logo-wrap img { max-width: 220px; width: 100%; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.28)); }
+    .logo-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 12px;
+      width: 100%;
+    }
 
-    .title { text-align: center; font-size: 20px; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.2px; }
-    .subtitle { text-align: center; font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.45; margin-bottom: 24px; }
+    .logo-wrap img {
+      max-width: 240px;
+      width: 65%;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.28));
+    }
+
+    .title {
+      text-align: center;
+      font-size: 21px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      letter-spacing: 0.2px;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 13px;
+      color: rgba(255,255,255,0.75);
+      line-height: 1.45;
+      margin-bottom: 20px;
+    }
 
     .scanner-shell {
       position: relative;
@@ -70,7 +94,8 @@
       border-radius: 22px;
       background: #000;
       width: 100% !important;
-      aspect-ratio: 4 / 3; 
+      height: 52dvh !important;
+      max-height: 520px;
       box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 10px 25px rgba(0,0,0,0.3);
     }
 
@@ -88,32 +113,48 @@
       border-radius: 22px;
     }
 
-    #reader__scan_region svg { display: none !important; }
+    #reader__scan_region svg {
+      display: none !important;
+    }
 
-    .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
+    .overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 20;
+    }
 
     .scan-box {
-      position: absolute; left: 50%; top: 50%;
-      width: 82%; height: 140px; 
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 82%;
+      height: 160px;
       transform: translate(-50%, -50%);
       border: none !important;
-      box-shadow: none !important; 
+      box-shadow: none !important;
     }
 
     .laser-line {
-      position: absolute; left: 5%; right: 5%; height: 3px;
-      background: #ff4747; box-shadow: 0 0 12px #ff4747;
+      position: absolute;
+      left: 5%;
+      right: 5%;
+      height: 3px;
+      background: #ff4747;
+      box-shadow: 0 0 12px #ff4747;
       animation: laserMove 2.2s ease-in-out infinite;
       z-index: 22;
-      opacity: 0; 
+      opacity: 0;
       transition: opacity 0.5s;
     }
     
-    .laser-active { opacity: 1 !important; }
+    .laser-active {
+      opacity: 1 !important;
+    }
 
-    @keyframes laserMove { 
-      0%, 100% { top: 15%; } 
-      50% { top: 85%; } 
+    @keyframes laserMove {
+      0%, 100% { top: 15%; }
+      50% { top: 85%; }
     }
 
     .scan-hint {
@@ -132,12 +173,12 @@
       white-space: nowrap;
     }
 
-    .reading-status { 
-      margin-top: 24px; 
-      text-align: center; 
-      font-size: 16px; 
-      font-weight: 600; 
-      color: rgba(255,255,255,0.85); 
+    .reading-status {
+      margin-top: 22px;
+      text-align: center;
+      font-size: 17px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.85);
     }
 
     .cancel-btn {
@@ -146,14 +187,14 @@
       justify-content: center;
       margin-top: 20px;
       width: 100%;
-      max-width: 220px;
-      height: 48px;
+      max-width: 260px;
+      height: 52px;
       border-radius: 14px;
       border: none;
       background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%);
       color: #fff;
       font-weight: 700;
-      font-size: 17px;
+      font-size: 18px;
       cursor: pointer;
       box-shadow: 0 6px 16px rgba(0,0,0,0.25);
     }
@@ -167,6 +208,18 @@
       align-items: center;
       justify-content: center;
       z-index: 9999;
+    }
+
+    @media (min-width: 768px) {
+      .card-container {
+        padding-left: 28px !important;
+        padding-right: 28px !important;
+      }
+
+      .scanner-shell {
+        max-width: 720px;
+        align-self: center;
+      }
     }
   </style>
 </head>
@@ -215,24 +268,6 @@
   </div>
 
   <script>
-    // SCRIPT DE RESET DE VIEWPORT CRUCIAL PARA O SAFARI DO IOS
-    function aplicarFixViewportIOS() {
-      // Verifica a largura real da janela física do aparelho
-      const larguraFisica = window.innerWidth || document.documentElement.clientWidth;
-      
-      // Se for menor que 600px, o Safari aplicou zoom out indevido vindo do Flutter
-      if (larguraFisica > 500 && /iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        const root = document.getElementById('appRoot');
-        const card = document.getElementById('mainCard');
-        if (root && card) {
-          // Força dinamicamente o container a quebrar o zoom herdado expandindo a área útil
-          root.style.setProperty('width', '100vw', 'important');
-          card.style.setProperty('width', '92%', 'important');
-          card.style.setProperty('max-width', '440px', 'important');
-        }
-      }
-    }
-
     const APP_URL = "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariadosCopy";
 
     let html5QrCode = null;
@@ -320,11 +355,8 @@
     }
 
     window.addEventListener("load", () => {
-      aplicarFixViewportIOS();
       setTimeout(iniciarScanner, 200);
     });
-    
-    window.addEventListener("resize", aplicarFixViewportIOS);
   </script>
 
 </body>
