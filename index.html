@@ -4,52 +4,45 @@
   <meta charset="UTF-8" />
   <title>Invent JUS</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     
     html, body {
-      margin: 0;
-      padding: 0;
-      width: 100% !important;
-      height: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
       min-height: 100dvh !important;
       font-family: Arial, sans-serif;
       color: #fff;
-      background: #030d20;
-      overflow: hidden;
+      background: #030d20 !important;
+      overflow: hidden !important;
     }
 
     body {
-      display: flex;
-      align-items: stretch;
-      justify-content: center;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      background: radial-gradient(circle at top, rgba(64, 110, 255, 0.20), transparent 34%),
+                  linear-gradient(180deg, #030d20 0%, #071a3b 45%, #041127 100%) !important;
     }
 
-    /* Container Principal - Removemos margens e forçamos ocupar tudo */
     .app {
-      width: 100% !important;
-      max-width: 480px;
-      height: 100% !important;
-      min-height: 100dvh !important;
-      margin: 0 auto;
-      padding: max(20px, env(safe-area-inset-top)) 16px max(20px, env(safe-area-inset-bottom));
-      position: relative;
+      width: 100vw !important;
+      max-width: 440px !important;
+      height: 100dvh !important;
+      padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      background: radial-gradient(circle at top, rgba(64, 110, 255, 0.20), transparent 34%),
-                  linear-gradient(180deg, #030d20 0%, #071a3b 45%, #041127 100%);
     }
 
-    /* O Card agora expande e se adapta proporcionalmente ao espaço da tela */
     .card-container {
-      width: 100% !important;
-      height: auto;
-      max-height: 90dvh;
+      width: 100% !important; /* Passa a ocupar 100% da largura útil real do viewport */
       background: rgba(255, 255, 255, 0.06);
       border: 1px rgba(255, 255, 255, 0.08) solid;
       backdrop-filter: blur(12px);
@@ -60,16 +53,14 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: space-between;
     }
 
     .logo-wrap { display: flex; justify-content: center; align-items: center; margin-bottom: 12px; }
-    .logo-wrap img { max-width: 220px; width: 100%; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.28)); }
+    .logo-wrap img { max-width: 200px; width: 100%; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.28)); }
 
-    .title { text-align: center; font-size: 19px; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.2px; }
-    .subtitle { text-align: center; font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.4; margin-bottom: 16px; }
+    .title { text-align: center; font-size: 18px; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.2px; }
+    .subtitle { text-align: center; font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.4; margin-bottom: 20px; }
 
-    /* Força a área do visor da câmera a expandir na largura total do card */
     .scanner-shell {
       position: relative;
       overflow: hidden;
@@ -152,8 +143,8 @@
       justify-content: center;
       margin-top: 16px;
       width: 100%;
-      max-width: 220px;
-      height: 46px;
+      max-width: 200px;
+      height: 44px;
       border-radius: 14px;
       border: none;
       background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%);
@@ -173,18 +164,6 @@
       align-items: center;
       justify-content: center;
       z-index: 9999;
-    }
-
-    /* Em telas mobile, removemos qualquer margem artificial externa */
-    @media (max-width: 600px) {
-      .app {
-        width: 100% !important;
-        padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)) !important;
-      }
-      .card-container {
-        width: 100% !important;
-        padding: 24px 16px;
-      }
     }
   </style>
 </head>
