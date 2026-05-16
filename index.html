@@ -2,648 +2,214 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-
-  <title>Invent Jus - Leitor de Código de Barras</title>
-
+  <title>Invent JUS</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
-
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      min-height: 100dvh;
-      overflow-x: hidden;
-
-      font-family: Arial, Helvetica, sans-serif;
-
-      background:
-        radial-gradient(circle at top,
-        #102957 0%,
-        #041b3d 45%,
-        #021228 100%);
-
-      color: white;
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    
+    html, body {
+      margin: 0; padding: 0; min-height: 100%;
+      font-family: Arial, sans-serif; color: #fff;
+      background: radial-gradient(circle at top, rgba(64, 110, 255, 0.20), transparent 34%),
+                  linear-gradient(180deg, #030d20 0%, #071a3b 45%, #041127 100%);
     }
 
-    body {
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
+    body { display: flex; align-items: center; justify-content: center; padding: 14px; }
 
-      padding-top: env(safe-area-inset-top);
-    }
-
-    .scanner-card {
-
-      width: calc(100vw - 10px);
-      max-width: 760px;
-
-      margin: 18px auto 0 auto;
-
-      padding: 34px 28px 40px 28px;
-
-      border-radius: 34px;
-
-      box-sizing: border-box;
-
-      background:
-        rgba(21, 41, 76, 0.88);
-
-      border:
-        1px solid rgba(255,255,255,0.10);
-
-      box-shadow:
-        0 20px 45px rgba(0,0,0,0.35),
-        inset 0 1px 0 rgba(255,255,255,0.04);
-    }
-
-    .logo {
-
-      width: 380px;
-      max-width: 82%;
-
-      display: block;
-
-      margin: 0 auto 24px auto;
-    }
-
-    h1 {
-
-      margin: 6px 0 12px 0;
-
-      text-align: center;
-
-      font-size: 32px;
-      font-weight: 700;
-    }
-
-    .subtitle {
-
-      margin: 0 0 30px 0;
-
-      text-align: center;
-
-      font-size: 20px;
-
-      color:
-        rgba(255,255,255,0.78);
-    }
-
-    .reader-wrapper {
-
+    .app {
+      width: 100%; max-width: 430px; border-radius: 26px; padding: 18px 16px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255,255,255,0.05);
       position: relative;
-
-      width: 100%;
-
-      aspect-ratio: 16 / 9;
-
-      border-radius: 24px;
-
-      overflow: hidden;
-
-      background: black;
-
-      box-shadow:
-        0 10px 28px rgba(0,0,0,0.35);
     }
 
-    #reader {
+    .logo-wrap { display: flex; justify-content: center; align-items: center; margin-bottom: 10px; }
+    .logo-wrap img { max-width: 210px; width: 100%; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.28)); }
 
-      width: 100%;
-      height: 100%;
+    .title { text-align: center; font-size: 17px; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.2px; }
+    .subtitle { text-align: center; font-size: 13px; color: rgba(255,255,255,0.82); line-height: 1.45; margin-bottom: 16px; }
+
+    .scanner-shell {
+      position: relative; overflow: hidden; border-radius: 22px;
+      background: #000; min-height: 310px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 10px 30px rgba(0,0,0,0.32);
     }
 
-    #reader video {
+    #reader { width: 100%; min-height: 310px; background: #000; border: none !important; }
+    #reader video { width: 100% !important; height: 310px !important; object-fit: cover !important; border-radius: 22px; }
 
-      width: 100% !important;
-      height: 100% !important;
+    #reader__scan_region svg { display: none !important; }
 
-      object-fit: cover !important;
-    }
-
-    .overlay {
-
-      position: absolute;
-
-      inset: 0;
-
-      pointer-events: none;
-
-      z-index: 10;
-    }
+    .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
 
     .scan-box {
+      position: absolute; left: 50%; top: 50%;
+      width: 82%; height: 160px; 
+      transform: translate(-50%, -50%);
+      border: none !important;
+      box-shadow: none !important; 
+    }
 
+    /* ALTERAÇÃO: Laser inicia escondido (opacity: 0) */
+    .laser-line {
+      position: absolute; left: 5%; right: 5%; height: 3px;
+      background: #ff4747; box-shadow: 0 0 12px #ff4747;
+      animation: laserMove 2.2s ease-in-out infinite;
+      z-index: 22;
+      opacity: 0; 
+      transition: opacity 0.5s;
+    }
+    
+    /* Classe que o JavaScript vai adicionar para mostrar o laser */
+    .laser-active { opacity: 1 !important; }
+
+    @keyframes laserMove { 0%, 100% { top: 12%; } 50% { top: 88%; } }
+
+    .scan-hint {
       position: absolute;
-
-      left: 8%;
-      right: 8%;
-
-      top: 31%;
-
-      height: 38%;
-
-      background:
-        rgba(255,255,255,0.10);
-    }
-
-    @keyframes laserMove {
-
-      0% {
-        top: 37%;
-      }
-
-      50% {
-        top: 63%;
-      }
-
-      100% {
-        top: 37%;
-      }
-    }
-
-    .laser {
-
-      position: absolute;
-
-      left: 8%;
-      right: 8%;
-
-      height: 4px;
-
-      background: #ff3a3a;
-
-      box-shadow:
-        0 0 8px #ff3a3a,
-        0 0 18px #ff3a3a;
-
-      animation:
-        laserMove 1.7s ease-in-out infinite;
-    }
-
-    .corner {
-
-      position: absolute;
-
-      width: 58px;
-      height: 58px;
-
-      border-color: white;
-      border-style: solid;
-    }
-
-    .top-left {
-
-      left: 8%;
-      top: 27%;
-
-      border-width: 6px 0 0 6px;
-    }
-
-    .top-right {
-
-      right: 8%;
-      top: 27%;
-
-      border-width: 6px 6px 0 0;
-    }
-
-    .bottom-left {
-
-      left: 8%;
-      bottom: 27%;
-
-      border-width: 0 0 6px 6px;
-    }
-
-    .bottom-right {
-
-      right: 8%;
-      bottom: 27%;
-
-      border-width: 0 6px 6px 0;
-    }
-
-    .hint {
-
-      position: absolute;
-
-      left: 0;
-      right: 0;
-
-      bottom: 20px;
-
+      left: 50%;
+      top: calc(50% + 100px);
+      transform: translateX(-50%);
+      width: 90%;
       text-align: center;
-
-      font-size: 18px;
-
-      color:
-        rgba(255,255,255,0.82);
-
-      text-shadow:
-        0 1px 4px rgba(0,0,0,0.85);
+      font-size: 13px;
+      color: rgba(255,255,255,0.9);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+      z-index: 23;
+      opacity: 0;
+      transition: opacity 0.5s;
+    
+      white-space: nowrap; /* 👈 impede quebra de linha */
     }
 
-    .status {
+    .reading-status { margin-top: 14px; text-align: center; font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.92); }
 
-      margin-top: 30px;
-
-      text-align: center;
-
-      font-size: 28px;
-      font-weight: 700;
-
-      color:
-        rgba(255,255,255,0.90);
-    }
-
-    .cancel-container {
-
-      margin-top: 28px;
-
+    .cancel-btn {
       display: flex;
+      align-items: center;
       justify-content: center;
-    }
-
-    .cancel-button {
-
-      width: 360px;
-      max-width: 78%;
-
-      height: 76px;
-
-      border: none;
-
-      border-radius: 22px;
-
-      cursor: pointer;
-
-      color: white;
-
-      font-size: 28px;
+      margin: 16px auto 0;
+      min-width: 180px;
+      height: 44px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #d62828 0%, #b71c1c 100%);
+      color: #fff;
       font-weight: 700;
-
-      background:
-        linear-gradient(
-          180deg,
-          #ef3737 0%,
-          #c91515 100%
-        );
-
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.28),
-        0 8px 18px rgba(0,0,0,0.30);
+      font-size: 17px;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.22);
     }
 
-    @media (max-width: 768px) {
-
-      .scanner-card {
-
-        width: calc(100vw - 8px);
-
-        padding:
-          30px 20px 34px 20px;
-
-        border-radius: 30px;
-      }
-
-      .logo {
-
-        width: 340px;
-        max-width: 84%;
-      }
-
-      h1 {
-
-        font-size: 30px;
-      }
-
-      .subtitle {
-
-        font-size: 18px;
-      }
-
-      .hint {
-
-        font-size: 16px;
-      }
-
-      .status {
-
-        font-size: 26px;
-      }
-
-      .cancel-button {
-
-        width: 320px;
-
-        height: 70px;
-
-        font-size: 26px;
-      }
+    #successOverlay {
+      position: fixed; inset: 0; background: rgba(0, 168, 89, 0.96);
+      display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999;
     }
-
-    @media (max-width: 420px) {
-
-      .scanner-card {
-
-        width: calc(100vw - 6px);
-
-        padding:
-          24px 16px 30px 16px;
-
-        border-radius: 26px;
-      }
-
-      .logo {
-
-        width: 300px;
-        max-width: 86%;
-      }
-
-      h1 {
-
-        font-size: 26px;
-      }
-
-      .subtitle {
-
-        font-size: 16px;
-
-        margin-bottom: 24px;
-      }
-
-      .corner {
-
-        width: 48px;
-        height: 48px;
-      }
-
-      .hint {
-
-        font-size: 14px;
-
-        bottom: 16px;
-      }
-
-      .status {
-
-        font-size: 24px;
-
-        margin-top: 24px;
-      }
-
-      .cancel-button {
-
-        width: 280px;
-
-        height: 64px;
-
-        font-size: 24px;
-
-        border-radius: 18px;
-      }
-    }
-
   </style>
 </head>
-
 <body>
 
-  <div class="scanner-card">
+  <div class="app">
+    <div class="logo-wrap">
+      <img src="logo-inventjus.png" alt="Invent JUS">
+    </div>
 
-    <img
-      class="logo"
-      src="logo-inventjus.png"
-      alt="Invent Jus"
-    />
+    <div class="title">Leitor de código de barras</div>
+    <div class="subtitle">Centralize a etiqueta patrimonial dentro da área de leitura.</div>
 
-    <h1>
-      Leitor de código de barras
-    </h1>
-
-    <p class="subtitle">
-      Centralize a etiqueta patrimonial dentro da área de leitura.
-    </p>
-
-    <div class="reader-wrapper">
-
+    <div class="scanner-shell">
       <div id="reader"></div>
-
       <div class="overlay">
-
-        <div class="scan-box"></div>
-
-        <div class="laser"></div>
-
-        <div class="corner top-left"></div>
-        <div class="corner top-right"></div>
-
-        <div class="corner bottom-left"></div>
-        <div class="corner bottom-right"></div>
-
-        <div class="hint">
-          Aproxime e mantenha o código alinhado na horizontal
+        <div class="scan-box">
+          <div class="laser-line" id="laser"></div>
         </div>
-
+        <div class="scan-hint" id="hint">Aproxime e mantenha o código alinhado na horizontal</div>
       </div>
-
     </div>
 
-    <div class="status" id="status">
-      Lendo...
-    </div>
+    <div class="reading-status" id="status-text">Iniciando...</div>
 
-    <div class="cancel-container">
+    <button class="cancel-btn" onclick="retornarAoApp('')">Cancelar</button>
+  </div>
 
-      <button
-        class="cancel-button"
-        onclick="cancelarLeitura()">
-
-        Cancelar
-
-      </button>
-
-    </div>
-
+  <div id="successOverlay">
+    <div style="font-size:72px">✔</div>
+    <div style="font-size:22px; font-weight:800">TOMBO LIDO</div>
   </div>
 
   <script>
+    const APP_URL = "https://inventario-patrimonial-orzkxr.flutterflow.app/lista_bens_inventariadosCopy";
+    let html5QrCode = null;
+    let isReturning = false;
 
-    const APP_URL =
-      "https://inventario-patrimonial-orzkxr.flutterflow.app/listaBensInventariadosCopy";
-
-    let html5QrCode;
-
-    let leituraFinalizada = false;
-
-    function voltarParaApp(tombo) {
-
-      const url =
-        `${APP_URL}?tombo=${encodeURIComponent(tombo)}&scanner_return=1&t=${Date.now()}`;
-
-      window.location.href = url;
-    }
-
-    async function cancelarLeitura() {
-
-      leituraFinalizada = true;
-
+    function playSyntheticBeep() {
       try {
-
-        if (html5QrCode) {
-
-          await html5QrCode.stop();
-
-          await html5QrCode.clear();
-        }
-
-      } catch (e) {
-
-        console.log(
-          "Erro ao parar câmera:",
-          e
-        );
-      }
-
-      voltarParaApp("cancelado");
-    }
-
-    function tocarBeep() {
-
-      try {
-
-        const audioCtx =
-          new (
-            window.AudioContext ||
-            window.webkitAudioContext
-          )();
-
-        const oscillator =
-          audioCtx.createOscillator();
-
-        const gainNode =
-          audioCtx.createGain();
-
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
         oscillator.connect(gainNode);
-
-        gainNode.connect(
-          audioCtx.destination
-        );
-
-        oscillator.type = "sine";
-
-        oscillator.frequency.value = 900;
-
-        gainNode.gain.value = 0.18;
-
+        gainNode.connect(audioCtx.destination);
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); 
+        gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.01);
+        gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.2);
         oscillator.start();
-
-        setTimeout(() => {
-
-          oscillator.stop();
-
-          audioCtx.close();
-
-        }, 150);
-
-      } catch (e) {
-
-        console.log(
-          "Erro beep:",
-          e
-        );
-      }
+        oscillator.stop(audioCtx.currentTime + 0.2);
+      } catch (e) { }
     }
 
-    async function iniciarScanner() {
+    async function retornarAoApp(codigo = "") {
+      if (isReturning) return;
+      isReturning = true;
 
-      html5QrCode =
-        new Html5Qrcode("reader");
+      if (codigo) {
+        document.getElementById("successOverlay").style.display = "flex";
+        playSyntheticBeep();
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+      }
 
-      const config = {
+      const url = new URL(APP_URL);
+      if (codigo) url.searchParams.set("tombo", codigo.replace(/\D/g, ""));
+      url.searchParams.set("scanner_return", "1");
+      url.searchParams.set("t", Date.now());
 
-        fps: 12,
+      if (html5QrCode) {
+        try { await html5QrCode.stop(); } catch(e) {}
+      }
 
-        aspectRatio: 1.7777778,
+      setTimeout(() => {
+        window.top.location.replace(url.toString());
+      }, codigo ? 400 : 0);
+    }
 
-        formatsToSupport: [
-
-          Html5QrcodeSupportedFormats.CODE_128,
-
-          Html5QrcodeSupportedFormats.CODE_39
-        ]
+    function iniciarScanner() {
+      html5QrCode = new Html5Qrcode("reader");
+      const config = { 
+        fps: 25, 
+        qrbox: { width: 300, height: 160 }, 
+        aspectRatio: 1.0 
       };
-
-      try {
-
-        await html5QrCode.start(
-
-          { facingMode: "environment" },
-
-          config,
-
-          async (decodedText) => {
-
-            if (leituraFinalizada)
-              return;
-
-            leituraFinalizada = true;
-
-            document.getElementById(
-              "status"
-            ).innerText =
-              "Código lido!";
-
-            tocarBeep();
-
-            try {
-
-              await html5QrCode.stop();
-
-              await html5QrCode.clear();
-
-            } catch (e) {
-
-              console.log(
-                "Erro ao finalizar:",
-                e
-              );
-            }
-
-            setTimeout(() => {
-
-              voltarParaApp(decodedText);
-
-            }, 250);
-          },
-
-          () => {
-            // Ignora erros contínuos
-          }
-        );
-
-      } catch (err) {
-
-        document.getElementById(
-          "status"
-        ).innerText =
-          "Erro ao acessar câmera";
-
-        console.log(err);
-      }
+      
+      html5QrCode.start({ facingMode: "environment" }, config, (text) => {
+        retornarAoApp(text);
+      }).then(() => {
+        // SUCESSO: A câmera abriu! Ativamos o laser e a dica visual agora
+        document.getElementById('status-text').innerText = "Lendo...";
+        document.getElementById('laser').classList.add('laser-active');
+        document.getElementById('hint').classList.add('laser-active');
+      }).catch(() => {
+        document.getElementById('status-text').innerText = "Erro ao acessar câmera.";
+      });
     }
 
-    window.addEventListener(
-      "load",
-      iniciarScanner
-    );
-
+    window.addEventListener("load", () => {
+      setTimeout(iniciarScanner, 200);
+    });
   </script>
-
 </body>
 </html>
