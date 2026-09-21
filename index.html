@@ -159,7 +159,7 @@
       }
 
       50% {
-        top: 74%;
+        top:74%;
       }
 
       100% {
@@ -515,12 +515,11 @@
   <script>
 
     const APP_URL =
-      "https://inventjus-prod.flutterflow.app/listaBensInventariadosCopy";
+       "https://inventjus-prod.flutterflow.app/listaBensInventariadosCopy";
 
     let html5QrCode;
 
     let leituraFinalizada = false;
-
 
     function voltarParaApp(tombo) {
 
@@ -536,7 +535,6 @@
 
       window.location.href = url;
     }
-
 
     async function cancelarLeitura() {
 
@@ -561,7 +559,6 @@
 
       voltarParaApp("");
     }
-
 
     function tocarBeep() {
 
@@ -611,138 +608,107 @@
     }
 
 
-    async function iniciarScanner() {
+    /*
+     * ÚNICA ALTERAÇÃO:
+     * tenta ativar autofocus contínuo depois
+     * que a câmera já estiver funcionando.
+     */
+    async function ativarAutofocoContinuo() {
 
-      /*
-       * Mantida exatamente a mesma criação
-       * do scanner que já funcionava.
-       */
+      try {
+
+        const video =
+          document.querySelector("#reader video");
+
+        if (!video || !video.srcObject) {
+          return;
+        }
+
+        const tracks =
+          video.srcObject.getVideoTracks();
+
+        if (!tracks || tracks.length === 0) {
+          return;
+        }
+
+        const track = tracks[0];
+
+        if (
+          typeof track.getCapabilities !== "function" ||
+          typeof track.applyConstraints !== "function"
+        ) {
+          return;
+        }
+
+        const capabilities =
+          track.getCapabilities();
+
+        if (
+          !capabilities ||
+          !capabilities.focusMode
+        ) {
+          return;
+        }
+
+        const modosFoco =
+          capabilities.focusMode;
+
+        if (
+          Array.isArray(modosFoco) &&
+          modosFoco.includes("continuous")
+        ) {
+
+          await track.applyConstraints({
+
+            advanced: [
+              {
+                focusMode: "continuous"
+              }
+            ]
+
+          });
+
+          console.log(
+            "Autofoco contínuo ativado."
+          );
+        }
+
+      } catch (e) {
+
+        /*
+         * Se Safari/iOS ou outro navegador
+         * não aceitar o controle de foco,
+         * não interfere no scanner.
+         */
+
+        console.log(
+          "Autofoco contínuo não disponível:",
+          e
+        );
+      }
+    }
+
+
+    async function iniciarScanner() {
 
       html5QrCode =
         new Html5Qrcode("reader");
 
-
-      /*
-       * CONFIGURAÇÃO OTIMIZADA
-       *
-       * Não altera a forma de abertura da câmera.
-       */
-
       const config = {
 
-        /*
-         * Original: 12 FPS
-         * Novo: 15 FPS
-         *
-         * Faz mais tentativas de leitura por segundo
-         * sem aumentar excessivamente o processamento.
-         */
-
-        fps: 15,
-
-
-        /*
-         * REGIÃO REAL DE LEITURA
-         *
-         * O decoder passa a analisar uma região
-         * horizontal central, adequada às etiquetas
-         * CODE_128 e CODE_39.
-         */
-
-        qrbox: function(
-          viewfinderWidth,
-          viewfinderHeight
-        ) {
-
-          /*
-           * Aproximadamente 78% da largura
-           * e 42% da altura.
-           */
-
-          let largura =
-            Math.floor(
-              viewfinderWidth * 0.78
-            );
-
-          let altura =
-            Math.floor(
-              viewfinderHeight * 0.42
-            );
-
-
-          /*
-           * Garantimos que a área nunca ultrapasse
-           * as dimensões disponíveis.
-           */
-
-          largura =
-            Math.min(
-              largura,
-              viewfinderWidth - 10
-            );
-
-          altura =
-            Math.min(
-              altura,
-              viewfinderHeight - 10
-            );
-
-
-          return {
-
-            width: largura,
-
-            height: altura
-          };
-        },
-
-
-        /*
-         * Mantida exatamente a proporção
-         * do scanner original.
-         */
+        fps: 12,
 
         aspectRatio: 1.3333333,
-
-
-        /*
-         * Como usamos a câmera traseira,
-         * não precisamos procurar o código
-         * em uma imagem horizontalmente invertida.
-         *
-         * Isso reduz processamento.
-         */
-
-        disableFlip: true,
-
-
-        /*
-         * Mantidos exatamente os dois formatos
-         * utilizados pelo InventJus.
-         */
 
         formatsToSupport: [
 
           Html5QrcodeSupportedFormats.CODE_128,
 
           Html5QrcodeSupportedFormats.CODE_39
-
         ]
       };
 
-
       try {
-
-        /*
-         * IMPORTANTE:
-         *
-         * Esta linha foi mantida exatamente
-         * como estava no scanner funcional.
-         *
-         * Não forçamos resolução.
-         * Não forçamos foco.
-         * Não selecionamos cameraId manualmente.
-         */
 
         await html5QrCode.start(
 
@@ -750,34 +716,23 @@
 
           config,
 
-
           async (decodedText) => {
 
             if (leituraFinalizada)
               return;
 
-
-            /*
-             * Evita leituras duplicadas.
-             */
-
             leituraFinalizada = true;
-
 
             document.getElementById(
               "status"
             ).innerText =
               "Código lido!";
 
-
             tocarBeep();
-
 
             document.getElementById(
               "successOverlay"
-            ).style.display =
-              "flex";
-
+            ).style.display = "flex";
 
             try {
 
@@ -793,71 +748,46 @@
               );
             }
 
-
             setTimeout(() => {
 
-              voltarParaApp(
-                decodedText
-              );
+              voltarParaApp(decodedText);
 
             }, 250);
-
           },
 
-
           () => {
-
-            /*
-             * Erros de leitura enquanto o decoder
-             * procura um código são normais.
-             */
-
+            // Ignora erros contínuos
           }
-
         );
+
+
+        /*
+         * NOVO:
+         *
+         * A câmera já abriu normalmente usando
+         * exatamente a configuração antiga.
+         *
+         * Somente agora tentamos ativar
+         * autofocus contínuo.
+         */
+
+        setTimeout(() => {
+
+          ativarAutofocoContinuo();
+
+        }, 500);
 
 
       } catch (err) {
 
-        /*
-         * Se houver erro, agora mostramos também
-         * o tipo do erro para facilitar diagnóstico.
-         */
-
-        console.error(
-          "Erro completo ao iniciar câmera:",
-          err
-        );
-
-
-        let mensagemErro =
-          "Erro ao acessar câmera";
-
-
-        if (err) {
-
-          if (err.name) {
-
-            mensagemErro +=
-              " (" + err.name + ")";
-
-          } else if (
-            typeof err === "string"
-          ) {
-
-            mensagemErro +=
-              " (" + err + ")";
-          }
-        }
-
-
         document.getElementById(
           "status"
         ).innerText =
-          mensagemErro;
+          "Erro ao acessar câmera";
+
+        console.log(err);
       }
     }
-
 
     window.addEventListener(
       "load",
