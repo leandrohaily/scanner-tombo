@@ -2,11 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
   <title>Invent Jus - Leitor de Código de Barras</title>
 
@@ -25,12 +21,10 @@
       font-family: Arial, Helvetica, sans-serif;
 
       background:
-        radial-gradient(
-          circle at top,
-          #102957 0%,
-          #041b3d 45%,
-          #021228 100%
-        );
+        radial-gradient(circle at top,
+        #102957 0%,
+        #041b3d 45%,
+        #021228 100%);
 
       color: white;
     }
@@ -486,9 +480,7 @@
 
     </div>
 
-    <div
-      class="status"
-      id="status">
+    <div class="status" id="status">
       Lendo...
     </div>
 
@@ -522,13 +514,6 @@
 
   <script>
 
-    /*
-     * ==========================================================
-     * INVENTJUS - SCANNER WEB
-     * Otimizado para Android + iPhone
-     * ==========================================================
-     */
-
     const APP_URL =
       "https://inventjus-prod.flutterflow.app/listaBensInventariadosCopy";
 
@@ -536,12 +521,6 @@
 
     let leituraFinalizada = false;
 
-
-    /*
-     * ==========================================================
-     * RETORNO PARA O INVENTJUS
-     * ==========================================================
-     */
 
     function voltarParaApp(tombo) {
 
@@ -558,12 +537,6 @@
       window.location.href = url;
     }
 
-
-    /*
-     * ==========================================================
-     * CANCELAR
-     * ==========================================================
-     */
 
     async function cancelarLeitura() {
 
@@ -589,12 +562,6 @@
       voltarParaApp("");
     }
 
-
-    /*
-     * ==========================================================
-     * BEEP
-     * ==========================================================
-     */
 
     function tocarBeep() {
 
@@ -644,142 +611,53 @@
     }
 
 
-    /*
-     * ==========================================================
-     * OTIMIZAÇÃO DO FOCO
-     *
-     * Tenta ativar autofocus contínuo quando o navegador/câmera
-     * disponibiliza esse recurso.
-     *
-     * Em aparelhos que não oferecem a função, nada é alterado.
-     * ==========================================================
-     */
-
-    async function otimizarCamera() {
-
-      try {
-
-        if (!html5QrCode)
-          return;
-
-        const capabilities =
-          html5QrCode.getRunningTrackCameraCapabilities();
-
-        console.log(
-          "Capacidades da câmera:",
-          capabilities
-        );
-
-        /*
-         * Autofocus contínuo
-         */
-
-        if (
-          capabilities &&
-          capabilities.focusMode &&
-          typeof capabilities.focusMode.isSupported === "function" &&
-          capabilities.focusMode.isSupported()
-        ) {
-
-          const valores =
-            capabilities.focusMode.value();
-
-          console.log(
-            "Modos de foco disponíveis:",
-            valores
-          );
-
-          if (
-            Array.isArray(valores) &&
-            valores.includes("continuous")
-          ) {
-
-            await html5QrCode.applyVideoConstraints({
-
-              advanced: [
-                {
-                  focusMode: "continuous"
-                }
-              ]
-
-            });
-
-            console.log(
-              "Autofocus contínuo ativado."
-            );
-          }
-        }
-
-      } catch (e) {
-
-        /*
-         * Muito importante:
-         *
-         * iOS/Safari pode não disponibilizar controle manual
-         * de foco. Isso NÃO deve impedir o scanner de funcionar.
-         */
-
-        console.log(
-          "Controle avançado de foco não disponível:",
-          e
-        );
-      }
-    }
-
-
-    /*
-     * ==========================================================
-     * INICIAR SCANNER
-     * ==========================================================
-     */
-
     async function iniciarScanner() {
 
+      /*
+       * Mantida exatamente a mesma criação
+       * do scanner que já funcionava.
+       */
+
       html5QrCode =
-        new Html5Qrcode(
-          "reader",
-          {
-            verbose: false
-          }
-        );
+        new Html5Qrcode("reader");
 
 
       /*
-       * ----------------------------------------------------------
-       * REGIÃO REAL DE LEITURA
+       * CONFIGURAÇÃO OTIMIZADA
        *
-       * O scanner passa a analisar principalmente a região
-       * horizontal onde a etiqueta patrimonial é posicionada.
-       *
-       * Isso reduz processamento e favorece códigos 1D.
-       * ----------------------------------------------------------
+       * Não altera a forma de abertura da câmera.
        */
 
       const config = {
 
         /*
-         * 15 FPS:
+         * Original: 12 FPS
+         * Novo: 15 FPS
          *
-         * equilíbrio entre velocidade de leitura e processamento
-         * em Android e iPhone.
+         * Faz mais tentativas de leitura por segundo
+         * sem aumentar excessivamente o processamento.
          */
 
         fps: 15,
 
 
         /*
-         * Região retangular de leitura.
+         * REGIÃO REAL DE LEITURA
          *
-         * 78% da largura.
-         * 38% da altura.
-         *
-         * Especialmente adequada para CODE_128 / CODE_39.
+         * O decoder passa a analisar uma região
+         * horizontal central, adequada às etiquetas
+         * CODE_128 e CODE_39.
          */
 
         qrbox: function(
           viewfinderWidth,
           viewfinderHeight
         ) {
+
+          /*
+           * Aproximadamente 78% da largura
+           * e 42% da altura.
+           */
 
           let largura =
             Math.floor(
@@ -788,41 +666,25 @@
 
           let altura =
             Math.floor(
-              viewfinderHeight * 0.38
+              viewfinderHeight * 0.42
             );
 
 
           /*
-           * Evita valores extremos em telas pequenas.
-           */
-
-          largura =
-            Math.max(
-              220,
-              largura
-            );
-
-          altura =
-            Math.max(
-              100,
-              altura
-            );
-
-
-          /*
-           * Nunca ultrapassar o tamanho disponível.
+           * Garantimos que a área nunca ultrapasse
+           * as dimensões disponíveis.
            */
 
           largura =
             Math.min(
               largura,
-              viewfinderWidth - 20
+              viewfinderWidth - 10
             );
 
           altura =
             Math.min(
               altura,
-              viewfinderHeight - 20
+              viewfinderHeight - 10
             );
 
 
@@ -831,29 +693,32 @@
             width: largura,
 
             height: altura
-
           };
         },
 
 
         /*
-         * Mantém proporção atual da câmera.
+         * Mantida exatamente a proporção
+         * do scanner original.
          */
 
         aspectRatio: 1.3333333,
 
 
         /*
-         * Código patrimonial não precisa ser procurado
-         * em imagem espelhada.
+         * Como usamos a câmera traseira,
+         * não precisamos procurar o código
+         * em uma imagem horizontalmente invertida.
+         *
+         * Isso reduz processamento.
          */
 
         disableFlip: true,
 
 
         /*
-         * Mantemos EXATAMENTE os dois formatos necessários
-         * para as etiquetas do InventJus.
+         * Mantidos exatamente os dois formatos
+         * utilizados pelo InventJus.
          */
 
         formatsToSupport: [
@@ -868,52 +733,23 @@
 
       try {
 
-        document.getElementById(
-          "status"
-        ).innerText =
-          "Iniciando câmera...";
-
-
         /*
-         * --------------------------------------------------------
-         * CÂMERA TRASEIRA
-         * --------------------------------------------------------
+         * IMPORTANTE:
          *
-         * Ideal é solicitar 1280 x 720.
+         * Esta linha foi mantida exatamente
+         * como estava no scanner funcional.
          *
-         * "ideal" é proposital:
-         * o navegador pode escolher outra resolução se necessário.
+         * Não forçamos resolução.
+         * Não forçamos foco.
+         * Não selecionamos cameraId manualmente.
          */
-
-        const cameraConfig = {
-
-          facingMode: {
-            ideal: "environment"
-          },
-
-          width: {
-            ideal: 1280
-          },
-
-          height: {
-            ideal: 720
-          }
-
-        };
-
 
         await html5QrCode.start(
 
-          cameraConfig,
+          { facingMode: "environment" },
 
           config,
 
-
-          /*
-           * ======================================================
-           * SUCESSO NA LEITURA
-           * ======================================================
-           */
 
           async (decodedText) => {
 
@@ -922,7 +758,7 @@
 
 
             /*
-             * Bloqueia imediatamente novas leituras.
+             * Evita leituras duplicadas.
              */
 
             leituraFinalizada = true;
@@ -943,10 +779,6 @@
               "flex";
 
 
-            /*
-             * Para a câmera antes de retornar ao FlutterFlow.
-             */
-
             try {
 
               await html5QrCode.stop();
@@ -962,11 +794,6 @@
             }
 
 
-            /*
-             * Pequeno tempo para usuário visualizar
-             * confirmação verde.
-             */
-
             setTimeout(() => {
 
               voltarParaApp(
@@ -978,70 +805,59 @@
           },
 
 
-          /*
-           * ======================================================
-           * FALHAS NORMAIS DE DECODIFICAÇÃO
-           * ======================================================
-           *
-           * O decoder gera erros enquanto ainda está procurando
-           * o código. Eles são ignorados propositalmente.
-           */
-
           () => {
 
-            // Ignora erros contínuos de leitura.
+            /*
+             * Erros de leitura enquanto o decoder
+             * procura um código são normais.
+             */
 
           }
 
         );
 
 
-        /*
-         * Scanner já está ativo.
-         */
-
-        document.getElementById(
-          "status"
-        ).innerText =
-          "Lendo...";
-
-
-        /*
-         * --------------------------------------------------------
-         * FOCO CONTÍNUO
-         * --------------------------------------------------------
-         *
-         * Pequeno atraso permite que a câmera termine sua
-         * inicialização antes de tentarmos modificar o foco.
-         */
-
-        setTimeout(() => {
-
-          otimizarCamera();
-
-        }, 400);
-
-
       } catch (err) {
 
+        /*
+         * Se houver erro, agora mostramos também
+         * o tipo do erro para facilitar diagnóstico.
+         */
+
+        console.error(
+          "Erro completo ao iniciar câmera:",
+          err
+        );
+
+
+        let mensagemErro =
+          "Erro ao acessar câmera";
+
+
+        if (err) {
+
+          if (err.name) {
+
+            mensagemErro +=
+              " (" + err.name + ")";
+
+          } else if (
+            typeof err === "string"
+          ) {
+
+            mensagemErro +=
+              " (" + err + ")";
+          }
+        }
+
+
         document.getElementById(
           "status"
         ).innerText =
-          "Erro ao acessar câmera";
-
-        console.log(
-          "Erro ao iniciar scanner:",
-          err
-        );
+          mensagemErro;
       }
     }
 
-
-    /*
-     * ==========================================================
-     * INICIALIZAÇÃO
-     * ==========================================================
-     */
 
     window.addEventListener(
       "load",
